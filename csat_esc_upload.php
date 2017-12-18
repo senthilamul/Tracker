@@ -1,6 +1,6 @@
 <?php 
 include('includes/config.php');
-include('includes/session_check.php');
+//include('includes/session_check.php');
 if(isset($_POST['file'])){
     extract($_POST);
     if($_FILES['file_import']['name'] != ''){
@@ -21,13 +21,13 @@ if(isset($_POST['file'])){
                 $conn->exec($sql);
                 try {
                     $conn = new PDO("mysql:host=".SERVER.";dbname=".DATABASE, DBUSER, DBPASS);
-                   $conn->exec('LOAD DATA '.$localkeyword.' INFILE "'.$filePath.'" INTO TABLE  '. $TmpTableName. ' FIELDS TERMINATED BY ","   OPTIONALLY ENCLOSED BY '.'"'.'  LINES TERMINATED BY "\r\n" IGNORE 1 LINES');
+                   $conn->exec('LOAD DATA '.$localkeyword.' INFILE "'.$filePath.'" INTO TABLE  '. $TmpTableName. ' FIELDS TERMINATED BY ","   OPTIONALLY ENCLOSED BY """"  LINES TERMINATED BY "\r\n" IGNORE 1 LINES');
 
-                     $conn->exec('LOAD DATA '.$localkeyword.' INFILE "'.$filePath.'" INTO TABLE  '. $TmpTableName. ' FIELDS TERMINATED BY  ',' ENCLOSED BY  '.'"'.' ESCAPED BY  '"\\"' LINES TERMINATED BY  '\r\n' IGNORE 1 LINES');
+                     //$conn->exec('LOAD DATA '.$localkeyword.' INFILE "'.$filePath.'" INTO TABLE  '. $TmpTableName. ' FIELDS TERMINATED BY  ',' ENCLOSED BY  '.'"'.' ESCAPED BY  '"\\"' LINES TERMINATED BY  '\r\n' IGNORE 1 LINES');
 
                     if($file == 'CSAT'){
-                        $sql1 = "INSERT INTO aruba_csat1 SELECT * FROM $TmpTableName WHERE NOT EXISTS(SELECT * 
-                            FROM aruba_csat1 WHERE ($TmpTableName.`case_number`= aruba_csat1.case_number))";
+                        $sql1 = "INSERT INTO aruba_csat SELECT * FROM $TmpTableName WHERE NOT EXISTS(SELECT * 
+                            FROM aruba_csat WHERE ($TmpTableName.`case_number`= aruba_csat.case_number))";
                     }else if($file == 'Escalation'){
                         $sql1 = "INSERT INTO aruba_esc1 SELECT * FROM $TmpTableName WHERE NOT EXISTS(SELECT * 
                             FROM aruba_esc1 WHERE ($TmpTableName.`case`= aruba_esc1.case))";
@@ -36,9 +36,7 @@ if(isset($_POST['file'])){
                 }catch(PDOException $e){  
                     echo $e->getMessage(); 
                 }
-               
-               'LOAD DATA LOCAL INFILE  '.$localkeyword.' INTO TABLE  `aruba_csat` FIELDS TERMINATED BY  ',' ENCLOSED BY  '".".' ESCAPED BY  '\\' LINES TERMINATED BY  "\r\n" IGNORE 1 LINES'
-
+                //33802
 //"LOAD DATA LOCAL INFILE  '/tmp/phphLtP3h' INTO TABLE  `aruba_csat` FIELDS TERMINATED BY  ',' ENCLOSED BY  '".".' ESCAPED BY  '\\' LINES TERMINATED BY  '\r\n'".
 
                 // $dropTable = $conn->exec("DROP TABLE $TmpTableName");
@@ -83,7 +81,6 @@ include("includes/header.php");
                                             <div class="widget-title">TOTAL Backlog Upto</div>
                                             <div class="widget-subtitle"><?php 
                                             $date = $commonobj->getQry("SELECT count(*) as count,`date` From aruba_csat order by id ASC limit 0,1");
-                                            $date1 = $commonobj->getQry("SELECT count(*) as count,`date` From aruba_csat1 ");
                                             ?></div>
                                             <div class="widget-int"><span data-toggle="counter" data-to="<?=$date[0][count]?>"><?=$date[0]['count']?></span></div>
                                             <div class="widget-controls">
@@ -95,7 +92,7 @@ include("includes/header.php");
                                     </div>
                                     <div class="col-md-4">
                                         <div class="widget widget-success widget-no-subtitle">
-                                            <div class="widget-big-int"><span class="num-count"><?php echo $date1 ==''?'-':$date1[0]['count'] ?></span></div>                            
+                                            <div class="widget-big-int"><span class="num-count"><?php echo $ErrorMsg ==''?'-':$ErrorMsg ?></span></div>                            
                                             <div class="widget-subtitle">Total Records</div>
                                             <div class="widget-controls">
                                                 <a href="#" class="widget-control-left"><span class="fa fa-cloud"></span></a>
