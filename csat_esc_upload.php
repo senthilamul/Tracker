@@ -23,22 +23,17 @@ if(isset($_POST['file'])){
                     $conn = new PDO("mysql:host=".SERVER.";dbname=".DATABASE, DBUSER, DBPASS);
                    $conn->exec('LOAD DATA '.$localkeyword.' INFILE "'.$filePath.'" INTO TABLE  '. $TmpTableName. ' FIELDS TERMINATED BY ","   OPTIONALLY ENCLOSED BY """"  LINES TERMINATED BY "\r\n" IGNORE 1 LINES');
 
-                     //$conn->exec('LOAD DATA '.$localkeyword.' INFILE "'.$filePath.'" INTO TABLE  '. $TmpTableName. ' FIELDS TERMINATED BY  ',' ENCLOSED BY  '.'"'.' ESCAPED BY  '"\\"' LINES TERMINATED BY  '\r\n' IGNORE 1 LINES');
-
                     if($file == 'CSAT'){
                         $sql1 = "INSERT INTO aruba_csat SELECT * FROM $TmpTableName WHERE NOT EXISTS(SELECT * 
                             FROM aruba_csat WHERE ($TmpTableName.`case_number`= aruba_csat.case_number))";
                     }else if($file == 'Escalation'){
-                        $sql1 = "INSERT INTO aruba_esc1 SELECT * FROM $TmpTableName WHERE NOT EXISTS(SELECT * 
-                            FROM aruba_esc1 WHERE ($TmpTableName.`case`= aruba_esc1.case))";
+                        $sql1 = "INSERT INTO aruba_esc SELECT * FROM $TmpTableName WHERE NOT EXISTS(SELECT * 
+                            FROM aruba_esc WHERE ($TmpTableName.`case`= aruba_esc.case))";
                     }
                     $conn->exec($sql1);
                 }catch(PDOException $e){  
                     echo $e->getMessage(); 
                 }
-                //33802
-//"LOAD DATA LOCAL INFILE  '/tmp/phphLtP3h' INTO TABLE  `aruba_csat` FIELDS TERMINATED BY  ',' ENCLOSED BY  '".".' ESCAPED BY  '\\' LINES TERMINATED BY  '\r\n'".
-
                 // $dropTable = $conn->exec("DROP TABLE $TmpTableName");
                 // unlink($filePath);
             }else{
