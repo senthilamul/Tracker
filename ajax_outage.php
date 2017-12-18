@@ -321,154 +321,16 @@ if(isset($_POST['caseid']) && $_POST['comefrom'] == 'escalation' ){
 if (isset($_POST['selectdropdown']) && $_POST['comefrom'] == 'esc_tier_ajax') {
 
     $tier = explode("_", $_POST['selectdropdown']);
-    //$val = 'Controllable____';
-    //$tier = explode("_",$val);
-    if ($tier[0] == 'Controllable') {
-        $drp2 = array('Aruba','GEC-TAC','GSC-TAC','GSC-WC');
-        if ($tier[1] == 'Aruba') {
-            $drp3 = array('Product','RMA/Shipping','Sales Team','Tool/Database Issues');
-
-            if ($tier[2] == 'Product') {
-                $drp4 = array('Bad Scan','Delay in Bug Fix','Delay in Code Release','Delay in Patch Release','Delay in QA Replication','Inadequate Resolution','Issue resurfaced - Post Upgrade','New Feature request');
-                $drp5 = $tier[3] != '' ? array('Others') : '';
-            }
-            elseif($tier[2] == 'RMA/Shipping') {
-                $drp4 = array('Database related',"Delay in Shipment (RTF RMA's)",'Delay is shipment','DOA - Initial','DOA - Replacement','Out of stock','Replacement Unit - Defective','Shipping Label','Wrong unit shipped');
-                $drp5 = $tier[3] != '' ? array('Others') : '';
-
-            } else if ($tier[2] == 'Sales Team') {
-                $drp4 = array('Delpoyment Issue');
-                $drp5 = $tier[3] == 'Delpoyment Issue' ? array('Incorrect Design', 'No Site Survey Done', 'Wrong Product Sold') : '';
-
-            } else
-            if ($tier[2] == 'Tool/Database Issues') {
-                $drp4 = array('Delay in Response - DL Entitlement','Entitlement Delay','Incorrect entitlement status','Licence/serialnumber/certificate missing','SFDC/IT Related Issue','Customer record missing');
-                $drp5 = $tier[3] != '' ? array('Others') : '';
-            }
-        } else if ($tier[1] == 'GSC-TAC') {
-            $drp3 = array('Communication', 'People', 'Process', 'Technical');
-
-            if ($tier[2] == 'Communication') {
-                $drp4 = array('Effective communication', 'Rate of Speech/Voice & Accent');
-                $drp5 = $tier[3] != '' ? array('Others') : '';
-            }
-            elseif($tier[2] == 'People') {
-                $drp4 = array('Behaviour', 'Management');
-                if ($tier[3] == 'Behaviour') {
-                    $drp5 = array('Carelessness', 'Fake NAD');
-                } else if ($tier[3] == 'Management') {
-                    $drp5 = array('LIL', 'Out of Office', 'Out of Shift', 'Timely Case Assignment');
-
-
-                }
-            } else if ($tier[2] == 'Process') {
-                $drp4 = array('Availability', 'Case documentation', 'Delay in Response', 'Ownership', 'Process Awareness');
-
-                if ($tier[3] == 'Availability') {
-                    $drp5 = array('Availability - Existing Case', 'Availability - New Case');
-                } else if ($tier[3] == 'Case documentation') {
-                    $drp5 = array('Failed to document', 'In accurate/In adequate Documentation');
-                } else if ($tier[3] == 'Delay in Response') {
-                    $drp5 = array('Bug Filing','Engineer on a different call','Engineer out of office','Follow-up miss','Initial Respose','Log Analysis','Out of office','Out of shift response','Replication','RMA Initiation','Timely Escalation','Timely Response','Timezone Related','Case Handover','Failed To Response');
-                } else if ($tier[3] == 'Ownership') {
-                    $drp5 = array('Failed Commitment', 'Failed to Own', 'Incorrect RMA', 'Missed Schedule');
-                } else if ($tier[3] == 'Process Awareness') {
-                    $drp5 = array('Sense of Urgency');
-                }
-            } else
-            if ($tier[2] == 'Technical') {
-                $drp4 = array('Technical Competency');
-                $drp5 = $tier[3] != 'Technical Competency' ? array('Delay in Resolution','Inappropriate Response','Issue Resurfaced','Problem Understanding','Request for New Engineer','Technical Competency','Timely Escalation','Wrong Solution Provided','Suggestion/Steps did not help','Product Knowledge Gap','Inccurate/Inadequate Resolution','Timely Assistance') : '';
-
-            }
-        } else if ($tier[1] == 'GEC-TAC') {
-            $drp3 = array('Communication', 'People', 'Process', 'Technical');
-            if ($tier[2] == 'Communication') {
-                $drp4 = array('Effective communication', 'Rate of Speech/Voice & Accent');
-                $drp5 = $tier[3] != '' ? array('Others') : '';
-            }
-            elseif($tier[2] == 'People') {
-                $drp4 = array('Availability');
-                if ($tier[3] == 'Availability')
-                    $drp5 = array('GEC Denied');
-
-            } else if ($tier[2] == 'Process') {
-                $drp4 = array('Availability','Case documentation','Delay in Response','Ownership');
-                if ($tier[3] == 'Availability') {
-                    $drp5 = array('Availability - Existing Case', 'Availability - New Case', 'GEC Unavailable', 'TimeZone Related');
-                } else if ($tier[3] == 'Case documentation') {
-                    $drp5 = array('Failed to document', 'In accurate Response', 'In accurate/In adequate Documentation');
-                } else if ($tier[3] == 'Delay in Response') {
-                    $drp5 = array('Delay in Response', 'Replication', 'RMA Initiation');
-                } else if ($tier[3] == 'Ownership') {
-                    $drp5 = array('In accurate RMA');
-                }
-            } else
-            if ($tier[2] == 'Technical') {
-                $drp4 = array('Technical Competency');
-                $drp5 = $tier[3] != 'Technical Competency' ? array('Issue Resurfaced', 'Problem Understanding', 'Suggestion/Steps did not help', 'Technical Competency') : '';
-
-            }
-        } else if ($tier[1] == 'GSC-WC') {
-            $drp3 = array('Communication', 'Process');
-            if ($tier[2] == 'Communication') {
-                $drp4 = array('Effective communication', 'Rate of Speech/Voice & Accent');
-                $drp5 = $tier[3] != '' ? array('Others') : '';
-            }
-            elseif($tier[2] == 'Process') {
-                $drp4 = array('Case documentation','Delay in Response','Ownership','Process Awareness');
-                if ($tier[3] == 'Case documentation') {
-                    $drp5 = array('Delay in Documentation','Failed to Document/Update','Inccurate/Inadequate case Documentation','Inccurate/Inadequate info given to Customer','Incorrect Priority');
-                } else if ($tier[3] == 'Delay in Response') {
-                    $drp5 = array('Follow-up miss','Delay in case assignment','Delay in RMA Processing','Delay in Case Transfer','Case Handover','Timely Response');
-                } else if ($tier[3] == 'Ownership') {
-                    $drp5 = array('Inccurate/Inadequate RMA processed','Wrong unit shipped','Shipped to Wrong/Incomplete Address');
-                } else if ($tier[3] == 'Process Awareness') {
-                    $drp5 = array('Denied TAC Support - Support Expired','Denied TAC Support - Valid Support','Case Closed - Inproper resolution','Login Issues','Denied Access - Support Expired','Denied Access - Valid Support','Activation Related Issues','License Transfer Issues','Legacy License Issues','License Consolidation Issues','FAR - Missed','Inappropriate Response');
-                }
-            }
-        } else {
-            $drp3 = array('');
-        }
-
-    } else if ($tier[0] == 'Uncontrollable') {
-        $drp2 = array('Aruba', 'GSC-TAC', 'GSC-WC');
-        if ($tier[1] == 'Aruba') {
-            $drp3 = array('RMA/Shipping');
-
-            if ($tier[2] == 'RMA/Shipping') {
-                $drp4 = array('Customs Delay', 'Missed NDB');
-                $drp5 = $tier[3] != 'Missed NDB' ? array('Others') : array('UPS Delay');
-            }
-        } else if ($tier[1] == 'GSC-TAC') {
-            $drp3 = array('Customer', 'Political Escalation', 'Sales Team');
-
-            if ($tier[2] == 'Customer') {
-                $drp4 = array('New Case','No Support / Support Expired','Out of Office','Environment Related','3rd Party Issue');
-                $drp5 = $tier[3] != '' ? array('Others') : '';
-            }
-            elseif($tier[2] == 'Political Escalation') {
-                $drp4 = array('Customer Sensitive','As per SE','As per Aruba Mgmt','Due to Past experience','Production/Network Impact','Deal Breaker/POC');
-                $drp5 = $tier[3] != '' ? array('Others') : '';
-            } else if ($tier[2] == 'Sales Team') {
-                $drp4 = array('ACE Request','Case follow-up','Production Deployment','Possible outage','Request for case review','Expedite request from customer','SE approved for support','Maintenance Window','POC','Out of Contract','New Case');
-                $drp5 = $tier[3] != '' ? array('Others') : '';
-            }
-        } else if ($tier[1] == 'GSC-WC') {
-            $drp3 = array('Customer');
-
-            if ($tier[2] == 'Customer') {
-                $drp4 = array('Out of Office');
-                $drp5 = $tier[3] != '' ? array('Others') : '';
-            }
-        }
-
-    } else {
-        $drp2 = array('Others');
-        $drp3 = array('Others');
-        $drp4 = array('Others');
-        $drp5 = array('Others');
-    }
+   // $tier = explode("_",'Controllable_Aruba__');
+    $Qry = empty($tier[0]) ?  '' :" and tier1 = '$tier[0]'";
+    $Qry.= empty($tier[1]) ?  '' :" and tier2 = '$tier[1]'";
+    $Qry.= empty($tier[2]) ?  '' :" and tier3 = '$tier[2]'";
+    $Qry.= empty($tier[3]) ?  '' :" and tier4 = '$tier[3]'";
+    $drp2 = $commonobj->arrayColumn($commonobj->getQry("SELECT distinct tier2 From esc_tier where tier1= '$tier[0]'"),'','tier2');
+    $drp3 = $commonobj->arrayColumn($commonobj->getQry("SELECT distinct tier3 From esc_tier where tier2= '$tier[1]'"),'','tier3');
+    $drp4 = $commonobj->arrayColumn($commonobj->getQry("SELECT distinct tier4 From esc_tier where tier3= '$tier[2]'"),'','tier4');
+    $drp5 = $commonobj->arrayColumn($commonobj->getQry("SELECT distinct tier5 From esc_tier where tier4= '$tier[3]'"),'','tier5');
+    
     echo json_encode(array('2' => $drp2, '3' => $drp3, '4' => $drp4, '5' => $drp5));
 }
 ?>
