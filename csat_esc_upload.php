@@ -28,7 +28,7 @@ if(isset($_POST['file'])){
                             FROM aruba_csat WHERE ($TmpTableName.`case_number`= aruba_csat.case_number))";
                     }else if($file == 'Escalation'){
                         $sql1 = "INSERT INTO aruba_esc SELECT * FROM $TmpTableName WHERE NOT EXISTS(SELECT * 
-                            FROM aruba_esc WHERE ($TmpTableName.`case`= aruba_esc.case))";
+                            FROM aruba_esc WHERE ($TmpTableName.`case`= aruba_esc.`case`))";
                     }
                     $conn->exec($sql1);
                 }catch(PDOException $e){  
