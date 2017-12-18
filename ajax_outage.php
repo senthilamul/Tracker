@@ -321,11 +321,12 @@ if(isset($_POST['caseid']) && $_POST['comefrom'] == 'escalation' ){
 if (isset($_POST['selectdropdown']) && $_POST['comefrom'] == 'esc_tier_ajax') {
 
     $tier = explode("_", $_POST['selectdropdown']);
-   // $tier = explode("_",'Controllable_Aruba__');
+    //$tier = explode("_",'Controllable_Aruba_Product_Bad Scan_');
     $drp2 = $commonobj->arrayColumn($commonobj->getQry("SELECT distinct tier2 From esc_tier where tier1= '$tier[0]'"),'','tier2');
     $drp3 = $commonobj->arrayColumn($commonobj->getQry("SELECT distinct tier3 From esc_tier where tier1= '$tier[0]' and tier2= '$tier[1]'"),'','tier3');
     $drp4 = $commonobj->arrayColumn($commonobj->getQry("SELECT distinct tier4 From esc_tier where tier1= '$tier[0]' and tier2= '$tier[1]' and tier3= '$tier[2]'"),'','tier4');
-    $drp5 = $commonobj->arrayColumn($commonobj->getQry("SELECT distinct tier5 From esc_tier where tier1= '$tier[0]' and tier2= '$tier[1]' and tier3= '$tier[2] and tier4= '$tier[3]'"),'','tier5');
+    
+    $drp5 = $commonobj->arrayColumn($commonobj->getQry("SELECT distinct tier5 From esc_tier where tier1= '$tier[0]' and tier2= '$tier[1]' and tier3= '$tier[2]' and tier4 = '$tier[3]'"),'','tier5');
     
     echo json_encode(array('2' => $drp2, '3' => $drp3, '4' => $drp4, '5' => $drp5));
 }
