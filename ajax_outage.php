@@ -315,7 +315,7 @@ if(isset($_POST['selectList']) && $_POST['comefrom'] == 'escalation' ){
 if(isset($_POST['caseid']) && $_POST['comefrom'] == 'escalation' ){
     $case_num = $_POST['caseid'];
     //$case_num = '5314647099';
-    $query = $commonobj->getQry("SELECT wlan_ns,product,queue,region,tier_1,tier_2,tier_3,tier_4,tier_5,rca_comments,`date`,manager_name,role FROM aruba_esc where `case` = '$case_num'  and LENGTH (`case`) > 7 $filterQry ");
+    $query = $commonobj->getQry("SELECT wlan_ns,product,queue,region,tier_1,tier_2,tier_3,tier_4,tier_5,rca_comments,`date`,manager_name,role,tl_exception,mgr_tier_1,mgr_tier_2,mgr_tier_3,mgr_tier_4,mgr_tier_5,mgr_rca_comments,mgr_exception FROM aruba_esc where `case` = '$case_num'  and LENGTH (`case`) > 7 $filterQry ");
     echo json_encode(array('0'=>$query));
 }
 if (isset($_POST['selectdropdown']) && $_POST['comefrom'] == 'esc_tier_ajax') {
