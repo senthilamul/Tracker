@@ -9,15 +9,18 @@ if(!empty($caseNumber)){
 }
 $returnArr = $returnArr[0];
 $escreturnArr = $escalationArr[0];
-//print_r($escreturnArr);
 if(isset($_POST['tlname'])){
     extract($_POST);
     if($userType1 == 'TL'){
-        $UpdateQry = "UPDATE aruba_csat set tl_tier1='$tier1',tl_tier2='$tier2',tl_tier3='$tier3',tl_tier4='$tier4',tl_tier5='$tier5',tl_comments='$tl_cmds',tl_status='1',tl_update_date='$dbdatetime' where case_number = '$case_number'";
+        $UpdateQry = "UPDATE aruba_csat set tl_tier1='$tier1',tl_tier2='$tier2',tl_tier3='$tier3',tl_comments='$tl_cmds',tl_exception='$iradio',tl_status='1',tl_update_date='$dbdatetime' where case_number = '$case_number'";
         $upsubtable = $conn->prepare($UpdateQry);
         $upsubtable->execute();
-    }else{       
-        $UpdateQry = "UPDATE aruba_csat set mgr_tier1='$tier1',mgr_tier2='$tier2',mgr_tier3='$tier3',mgr_tier4='$tier4',mgr_tier5='$tier5',mgr_comments='$tl_cmds',mgr_status='1',mgr_update_date='$dbdatetime' where case_number = '$case_number'";
+    }else if($userType1 == 'Manager'){       
+        $UpdateQry = "UPDATE aruba_csat set mgr_tier1='$tier1',mgr_tier2='$tier2',mgr_tier3='$tier3',mgr_comments='$tl_cmds',mgr_exception='$iradio',mgr_status='1',mgr_update_date='$dbdatetime' where case_number = '$case_number'";
+        $upsubtable = $conn->prepare($UpdateQry);
+        $upsubtable->execute();
+    }else{
+        $UpdateQry = "UPDATE aruba_csat set client_exception='$iradio',client_comments='$tl_cmds' where case_number = '$case_number'";
         $upsubtable = $conn->prepare($UpdateQry);
         $upsubtable->execute();
     }
@@ -57,9 +60,10 @@ include("includes/header.php");
                                 <div class="form-group">
                                     <label class="col-md-3 col-xs-12 control-label">Team Leader</label>
                                     <div class="col-md-9 col-xs-12">     
-                                       <select class="form-control select" onchange="drpdown()" name='tlname' id="tlname"  data-live-search="true"  required>
+                                       <select class="form-control select" onchange="drpdown()" name='tlname' id="tlname"  data-live-search="true" >
                                         <option value="">-- Select --</option>
                                            <?php
+                                            echo "SELECT distinct team from aruba_csat where alert_type !='Green' and LENGTH (case_number) > 7 $filterQry  order by team asc";
 
                                              $TlList = $commonobj->getQry("SELECT distinct team from aruba_csat where alert_type !='Green' and LENGTH (case_number) > 7 $filterQry  order by team asc");
                                                 foreach ($TlList as $key => $value) {
@@ -76,7 +80,7 @@ include("includes/header.php");
                                 <div class="form-group">
                                     <label class="col-md-3 col-xs-12 control-label">Case Owner</label>
                                     <div class="col-md-9 col-xs-12">     
-                                       <select class="form-control" onchange="drpdown()" name='case_owner' id="case_owner" required>
+                                       <select class="form-control" onchange="drpdown()" name='case_owner' id="case_owner" >
                                             <option value="">-- Select --</option>
                                            <?php
 
@@ -138,13 +142,13 @@ include("includes/header.php");
 
                                 <div class="form-group">
                                     <label class="col-md-3 col-xs-12 control-label">Comment</label>
-                                    <div class="col-md-9 col-xs-12">                                            
+                                    <div class="col-md-9 col-xs-12" required>                                            
                                         <textarea class="form-control" name='tl_cmds' rows="12"></textarea>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-md-3 col-xs-12 control-label">Exception</label>
-                                    <div class="col-md-9 col-xs-12">
+                                    <label class="col-md-4 col-xs-12 control-label" id='changelabel'>Exception</label>
+                                    <div class="col-md-8 col-xs-12">
                                         <div class="col-md-6">                                    
                                             <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="iradio" value="Yes"></div> Yes</label>
                                         </div>
@@ -235,16 +239,14 @@ include("includes/header.php");
                                     </tbody>
                                     <thead>
                                         <tr class="active">
-                                            <th>Tier 4</th>
-                                            <th>Tier 5</th>
-                                            <th>Comments</th>
+                                            <th colspan="2">Comments</th>
+                                            <th>Exception</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr class="success">
-                                            <td id="csat_lead_tier4"><?php echo empty($returnArr['tl_tier4'])?'-':$returnArr['tl_tier4'] ?></td>
-                                            <td id="csat_lead_tier5"><?php echo empty($returnArr['tl_tier5'])?'-':$returnArr['tl_tier5'] ?></td>
-                                            <td id="csat_lead_cmds"><?php echo empty($returnArr['tl_comments'])?'-':$returnArr['tl_comments'] ?></td>
+                                            <td colspan="2" id="csat_lead_cmds"><?php echo empty($returnArr['tl_comments'])?'-':$returnArr['tl_comments'] ?></td>
+                                            <td id="csat_lead_exception"><?php echo empty($returnArr['tl_exception'])?'-':$returnArr['tl_exception'] ?></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -260,23 +262,21 @@ include("includes/header.php");
                                     </thead>
                                     <tbody>
                                         <tr class="success">
-                                            <td id="csat_lead_tier1">-</td>
-                                            <td id="csat_lead_tier2">-</td>
-                                            <td id="csat_lead_tier3">-</td>
+                                             <td id="csat_mgr_tier1"><?php echo empty($returnArr['mgr_tier1'])?'-':$returnArr['mgr_tier1'] ?></td>
+                                            <td id="csat_mgr_tier2"><?php echo empty($returnArr['mgr_tier2'])?'-':$returnArr['mgr_tier2'] ?></td>
+                                            <td id="csat_mgr_tier3"><?php echo empty($returnArr['mgr_tier3'])?'-':$returnArr['mgr_tier3'] ?></td>
                                         </tr>
                                     </tbody>
                                     <thead>
                                         <tr class="active">
-                                            <th>Tier 4</th>
-                                            <th>Tier 5</th>
-                                            <th>Comments</th>
+                                            <th colspan="2">Comments</th>
+                                            <th>Exception</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr class="success">
-                                            <td id="csat_lead_tier4">-</td>
-                                            <td id="csat_lead_tier5">-</td>
-                                            <td id="csat_lead_cmds">-</td>
+                                            <td colspan="2" id="csat_mgr_cmds"><?php echo empty($returnArr['mgr_comments'])?'-':$returnArr['mgr_comments'] ?></td>
+                                            <td id="csat_mgr_exception"><?php echo empty($returnArr['mgr_exception'])?'-':$returnArr['mgr_exception'] ?></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -297,3 +297,13 @@ include("includes/header.php");
 <?php include("includes/footer.php"); ?>
 <script src="js/jquery-confirm.min.js" type="text/javascript"></script>
 <script src="dropdown_ajax.js" type="text/javascript"></script>
+<script>
+    var usertype = "<?php echo $userType?>";
+    console.log(usertype);
+    if(usertype == 'client'){
+        $('#tier1').attr('disabled', 'disabled');
+        $('#tier2').attr('disabled', 'disabled');
+        $('#tier3').attr('disabled', 'disabled');
+        $('#changelabel').text('Accept Exception');
+    }
+</script>
