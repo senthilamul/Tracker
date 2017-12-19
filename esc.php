@@ -9,14 +9,18 @@ if(!empty($caseNumber)){
 }
 $returnArr = $returnArr[0];
 $escreturnArr = $escalationArr[0];
-if(isset($_POST['tlname'])){
+if(isset($_POST['esc_tlname'])){
     extract($_POST);
     if($userType == 'TL'){
         $UpdateQry = "UPDATE aruba_esc set tier_1='$esc_tier1',tier_2='$esc_tier2',tier_3='$esc_tier3',tier_4='$esc_tier4',tier_5='$esc_tier5',rca_comments='$esc_tl_cmds',tl_exception='$iradio',tl_status='1',tl_update_date='$dbdatetime' where `case` = '$esc_case_number'";
         $upsubtable = $conn->prepare($UpdateQry);
         $upsubtable->execute();
-    }else{       
+    }else if($userType == 'Manager'){       
         $UpdateQry = "UPDATE aruba_esc set mgr_tier_1='$esc_tier1',mgr_tier_2='$esc_tier2',mgr_tier_3='$esc_tier3',mgr_tier_4='$esc_tier4',mgr_tier_5='$esc_tier5',mgr_rca_comments='$esc_tl_cmds',mgr_exception='$iradio',mgr_status='1',mgr_update_date='$dbdatetime' where `case` = '$esc_case_number'";
+        $upsubtable = $conn->prepare($UpdateQry);
+        $upsubtable->execute();
+    }else{
+        $UpdateQry = "UPDATE aruba_esc set client_exception='$iradio',client_comments='$esc_tl_cmds' where `case` = '$esc_case_number'";
         $upsubtable = $conn->prepare($UpdateQry);
         $upsubtable->execute();
     }
@@ -161,8 +165,8 @@ include("includes/header.php");
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-md-3 col-xs-12 control-label">Exception</label>
-                                    <div class="col-md-9 col-xs-12">
+                                    <label class="col-md-4 col-xs-12 control-label" id='changelabel'>Exception</label>
+                                    <div class="col-md-8 col-xs-12">
                                         <div class="col-md-6">                                    
                                             <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="iradio" value="Yes"></div> Yes</label>
                                         </div>
@@ -297,3 +301,14 @@ include("includes/header.php");
 <?php include("includes/footer.php"); ?>
 <script src="js/jquery-confirm.min.js" type="text/javascript"></script>
 <script src="dropdown_ajax.js" type="text/javascript"></script>
+<script>
+    var usertype = "<?php echo $userType?>";
+    if(usertype == 'client'){
+        $('#esc_tier1').attr('disabled', 'disabled');
+        $('#esc_tier2').attr('disabled', 'disabled');
+        $('#esc_tier3').attr('disabled', 'disabled');
+        $('#esc_tier4').attr('disabled', 'disabled');
+        $('#esc_tier5').attr('disabled', 'disabled');
+        $('#changelabel').text('Accept Exception');
+    }
+</script>
