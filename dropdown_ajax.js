@@ -32,6 +32,7 @@ function drpdown(){
 }
 
 function selectCase(value) {
+    console.log(value)
   $.ajax({
         url: 'ajax_outage.php',
         type: 'POST',
@@ -42,7 +43,7 @@ function selectCase(value) {
        output = JSON.parse(output);
        tableArr  = output[1];
        getoutput = output[0];
-       //console.log(getoutput);
+       console.log(getoutput);
        if(getoutput.length > 0){
            for (var i = 0; i < getoutput.length; i++) {
                 $('#csat_que').html(getoutput[i]['que_new'])  
@@ -70,6 +71,8 @@ function selectCase(value) {
                 $('#csat_lead_tier4').html(getoutput[i]['tl_tier4'] == null ? '-' : getoutput[i]['tl_tier4'] );
                 $('#csat_lead_tier5').html(getoutput[i]['tl_tier5'] == null ? '-' : getoutput[i]['tl_tier5'] );
                 $('#csat_lead_cmds').html(getoutput[i]['tl_comments'] == null ? '-' : getoutput[i]['tl_comments'] );
+
+
            };
         }else{
                
@@ -150,11 +153,9 @@ function tireselect () {
 	var tier1 = $('#tier1').val() == '' ? '' : $('#tier1').val();
 	var tier2 = $('#tier2').val() == '' ? '' : $('#tier2').val();
 	var tier3 = $('#tier3').val() == '' ? '' : $('#tier3').val();
-	var tier4 = $('#tier4').val() == '' ? '' : $('#tier4').val();
-	var tier5 = $('#tier5').val() == '' ? '' : $('#tier5').val();
-	var tier2drop,tier3drop,tier4drop,tier5drop;
+	var tier2drop,tier3drop;
 	$("#wait").css("display", "block");
-	var tierval = tier1+'_'+tier2+'_'+tier3+'_'+tier4+'_'+tier5;
+	var tierval = tier1+'_'+tier2+'_'+tier3;
 	console.info(tierval);
 	$.ajax({
 		url: 'ajax_outage.php',
@@ -329,14 +330,14 @@ function esc_selectCase(value) {
                 $('#esc_lead_excep').html(getoutput[i]['tl_exception'] == null ?'-':getoutput[i]['tl_exception']);
 
 
-                $('#esc_lead_tier1').html(getoutput[i]['tier_1'] == null ?'-':getoutput[i]['tier_1'] );
-                $('#esc_lead_tier2').html(getoutput[i]['tier_2'] == null ?'-':getoutput[i]['tier_2']);
-                $('#esc_lead_tier3').html(getoutput[i]['tier_3'] == null ?'-':getoutput[i]['tier_3']);
+                $('#esc_mgr_tier1').html(getoutput[i]['mgr_tier_1'] == null ?'-':getoutput[i]['mgr_tier_1']);
+                $('#esc_mgr_tier2').html(getoutput[i]['mgr_tier_2'] == null ?'-':getoutput[i]['mgr_tier_2']);
+                $('#esc_mgr_tier3').html(getoutput[i]['mgr_tier_3'] == null ?'-':getoutput[i]['mgr_tier_3']);
 
-                $('#esc_lead_tier4').html(getoutput[i]['tier_4'] == null ?'-':getoutput[i]['tier_4']);
-                $('#esc_lead_tier5').html(getoutput[i]['tier_5'] == null ?'-':getoutput[i]['tier_5']);
-                $('#esc_lead_cmds').html(getoutput[i]['rca_comments'] == null ?'-':getoutput[i]['rca_comments']);
-                $('#esc_lead_excep').html(getoutput[i]['tl_exception'] == null ?'-':getoutput[i]['tl_exception']);
+                $('#esc_mgr_tier4').html(getoutput[i]['mgr_tier_4'] == null ?'-':getoutput[i]['mgr_tier_4']);
+                $('#esc_mgr_tier5').html(getoutput[i]['mgr_tier_5'] == null ?'-':getoutput[i]['mgr_tier_5']);
+                $('#esc_mgr_cmds').html(getoutput[i]['mgr_rca_comments'] == null ?'-':getoutput[i]['mgr_rca_comments']);
+                $('#esc_mgr_excep').html(getoutput[i]['mgr_exception'] == null ?'-':getoutput[i]['mgr_exception']);
            };
         }else{
                
