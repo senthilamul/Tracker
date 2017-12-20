@@ -2,25 +2,28 @@
 include('includes/config.php');
 //include('includes/session_check.php');
 $caseNumber = base64_decode($_GET['id']);
-$type = $_GET['type'];
 $msg = $_GET['msg'];
 if(!empty($caseNumber)){
-    $returnArr = $commonobj->getQry("SELECT alert_type,que_new,product_group,region,comments,overall_experience,nps,datetime_closed,cq3_ease_of_access,cq7_technical_ability,cq8_non_technical_performance,cq9_kept_informed,cq10_solution_time,engineer_email_id,tl_tier1,tl_tier2,tl_tier3,tl_tier4,tl_tier5,tl_comments,manager_name,team,case_owner,case_number from aruba_csat where case_number = '$caseNumber'");
+    
+    $returnArr = $commonobj->getQry("SELECT alert_type,que_new,product_group,region,comments,overall_experience,nps,datetime_closed,cq3_ease_of_access,cq7_technical_ability,cq8_non_technical_performance,cq9_kept_informed,cq10_solution_time,engineer_email_id,tl_tier1,tl_tier2,tl_tier3,tl_comments,manager_name,team,case_owner,case_number,tl_exception,mgr_tier1,mgr_tier2,mgr_tier3,mgr_comments,mgr_exception,nps_tl_tier1,nps_tl_tier2,nps_tl_tier3,nps_tl_comments,nps_tl_exception,nps_mgr_tier1,nps_mgr_tier2,nps_mgr_tier3,nps_mgr_comments,nps_mgr_exception from aruba_csat where case_number = '$caseNumber'");
 }
 $returnArr = $returnArr[0];
 $escreturnArr = $escalationArr[0];
+print_r($escreturnArr);
 if(isset($_POST['tlname'])){
     extract($_POST);
     if($userType1 == 'TL'){
-        $UpdateQry = "UPDATE aruba_csat set tl_tier1='$tier1',tl_tier2='$tier2',tl_tier3='$tier3',tl_comments='$tl_cmds',tl_exception='$iradio',tl_status='1',tl_update_date='$dbdatetime' where case_number = '$case_number'";
+        $UpdateQry = "UPDATE aruba_csat set tl_tier1='$tier1',tl_tier2='$tier2',tl_tier3='$tier3',tl_comments='$tl_cmds',tl_exception='$oe_iradio',tl_status='1',tl_update_date='$dbdatetime',nps_tl_tier1='$nps_tier1',nps_tl_tier2='$nps_tier2',nps_tl_tier3='$nps_tier3',nps_tl_comments='$nps_tl_cmds',nps_tl_exception='$nps_iradio' where case_number = '$case_number'";
         $upsubtable = $conn->prepare($UpdateQry);
         $upsubtable->execute();
     }else if($userType1 == 'Manager'){       
-        $UpdateQry = "UPDATE aruba_csat set mgr_tier1='$tier1',mgr_tier2='$tier2',mgr_tier3='$tier3',mgr_comments='$tl_cmds',mgr_exception='$iradio',mgr_status='1',mgr_update_date='$dbdatetime' where case_number = '$case_number'";
+        $UpdateQry = "UPDATE aruba_csat set mgr_tier1='$tier1',mgr_tier2='$tier2',mgr_tier3='$tier3',mgr_comments='$tl_cmds',mgr_exception='$oe_iradio',mgr_status='1',mgr_update_date='$dbdatetime',nps_mgr_tier1='$nps_tier1',nps_mgr_tier2='$nps_tier2',nps_mgr_tier3='$nps_tier3',nps_mgr_comments='$nps_tl_cmds',nps_mgr_exception='$nps_iradio' where case_number = '$case_number'";
         $upsubtable = $conn->prepare($UpdateQry);
         $upsubtable->execute();
     }else{
-        $UpdateQry = "UPDATE aruba_csat set client_exception='$iradio',client_comments='$tl_cmds' where case_number = '$case_number'";
+        $exception = empty($oe_iradio)?$nps_iradio :$oe_iradio;
+        $cmds = empty($nps_tl_cmds)?$tl_cmds :$nps_tl_cmds;
+        $UpdateQry = "UPDATE aruba_csat set client_exception='$exception',client_comments='$cmds',client_status='1' where case_number = '$case_number'";
         $upsubtable = $conn->prepare($UpdateQry);
         $upsubtable->execute();
     }
@@ -33,6 +36,9 @@ include("includes/header.php");
     .form-control[disabled], .form-control[readonly] {
         color: #0a0000;
     }
+    td{
+        background: #b1d6d1 !important;
+    }
 </style>
 
 <div class="page-content-wrap">
@@ -40,7 +46,6 @@ include("includes/header.php");
     <div class="row">
     <ul class="breadcrumb">
         <li><a href="#">OE</a></li>
-        <li><a href="csat_nps.php">NPS</a></li>
         <li><a href="esc.php">Escalation</a></li>
     </ul>
         <div class="col-md-12">
@@ -63,9 +68,7 @@ include("includes/header.php");
                                        <select class="form-control select" onchange="drpdown()" name='tlname' id="tlname"  data-live-search="true" >
                                         <option value="">-- Select --</option>
                                            <?php
-                                            echo "SELECT distinct team from aruba_csat where alert_type !='Green' and LENGTH (case_number) > 7 $filterQry  order by team asc";
-
-                                             $TlList = $commonobj->getQry("SELECT distinct team from aruba_csat where alert_type !='Green' and LENGTH (case_number) > 7 $filterQry  order by team asc");
+                                             $TlList = $commonobj->getDistinctQry('team',$filterQry1);
                                                 foreach ($TlList as $key => $value) {
                                                   $select = $value['team'] == $returnArr['team'] ? 'selected':'';
                                                        
@@ -83,8 +86,7 @@ include("includes/header.php");
                                        <select class="form-control" onchange="drpdown()" name='case_owner' id="case_owner" >
                                             <option value="">-- Select --</option>
                                            <?php
-
-                                              $caseowner = $commonobj->getQry("SELECT distinct case_owner from aruba_csat where alert_type !='Green' and LENGTH (case_number) > 7 $filterQry  order by case_owner asc");
+                                              $caseowner = $commonobj->getDistinctQry('case_owner',$filterQry1);
                                               foreach ($caseowner as $key => $value) {
                                                echo '<option value="'. $value['case_owner'].'"'." $select ".'>'.$value['case_owner'].'</option>';
                                               }
@@ -100,7 +102,7 @@ include("includes/header.php");
                                         <select class="form-control" name='case_number' id="case_number" onchange="selectCase(this.value)" required>
                                             <option value="">-- Select --</option>
                                            <?php
-                                                $caseowner = $commonobj->getQry("SELECT distinct case_number from aruba_csat where alert_type !='Green' and  LENGTH (case_number) > 7 $filterQry order by case_number asc");
+                                               $caseowner = $commonobj->getDistinctQry('case_number',$filterQry1);
                                                 foreach ($caseowner as $key => $value) {
                                                  echo'<option value="'.$value['case_number'].'">'.$value['case_number'].'</option>';
                                                 }
@@ -109,51 +111,104 @@ include("includes/header.php");
                                         <script>$('#case_number').val("<?php echo $returnArr['case_number']?>")</script>
                                     </div>
                                 </div>
+                                <div class="row control-oe">
+                                    OE:
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Tier 1</label>
+                                        <div class="col-md-9">     
+                                            <select class="form-control" onchange="tireselect('oe')" name='tier1' id="tier1" required>
+                                                <option value="" class="">-- Select --</option>
+                                                <option value="Controllable">Controllable</option>
+                                                <option value="Uncontrollable">Uncontrollable</option>
+                                            </select>
+                                        </div>
+                                    </div>
 
-                                <div class="form-group">
-                                    <label class="col-md-3 control-label">Tier 1</label>
-                                    <div class="col-md-9">     
-                                        <select class="form-control" onchange="tireselect()" name='tier1' id="tier1" required>
-                                            <option value="" class="">-- Select --</option>
-                                            <option value="Controllable">Controllable</option>
-                                            <option value="Uncontrollable">Uncontrollable</option>
-                                        </select>
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Tier 2</label>
+                                        <div class="col-md-9">     
+                                            <select class="form-control" onchange="tireselect('oe')" name='tier2' id="tier2" required>
+                                                <option value="">-- Select --</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Tier 3</label>
+                                        <div class="col-md-9">     
+                                            <select class="form-control"  name='tier3' id="tier3" required>
+                                                <option value="">-- Select --</option>
+                                               
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-xs-12 control-label">Comment</label>
+                                        <div class="col-md-9 col-xs-12" required>                                            
+                                            <textarea class="form-control" name='tl_cmds' rows="15"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-4 col-xs-12 control-label changelabel">Exception</label>
+                                        <div class="col-md-8 col-xs-12">
+                                            <div class="col-md-6">                                    
+                                                <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="oe_iradio" value="Yes"></div> Yes</label required>
+                                            </div>
+                                            <div class="col-md-6">                                    
+                                                <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="oe_iradio" value="No"></div> No</label required>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                                
+                                <div class="row control-nps" >
+                                    NPS:
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Tier 1</label>
+                                        <div class="col-md-9">     
+                                            <select class="form-control" onchange="tireselect('nps')" name='nps_tier1' id="nps_tier1" required>
+                                                <option value="" class="">-- Select --</option>
+                                                <option value="Controllable">Controllable</option>
+                                                <option value="Uncontrollable">Uncontrollable</option>
+                                            </select>
+                                        </div>
+                                    </div>
 
-                                <div class="form-group">
-                                    <label class="col-md-3 control-label">Tier 2</label>
-                                    <div class="col-md-9">     
-                                        <select class="form-control" onchange="tireselect()" name='tier2' id="tier2" required>
-                                            <option value="">-- Select --</option>
-                                        </select>
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Tier 2</label>
+                                        <div class="col-md-9">     
+                                            <select class="form-control" onchange="tireselect('nps')" name='nps_tier2' id="nps_tier2" required>
+                                                <option value="">-- Select --</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Tier 3</label>
+                                        <div class="col-md-9">     
+                                            <select class="form-control" name='nps_tier3' id="nps_tier3" required>
+                                                <option value="">-- Select --</option>
+                                               
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-xs-12 control-label">Comment</label>
+                                        <div class="col-md-9 col-xs-12" required>                                            
+                                            <textarea class="form-control" name='nps_tl_cmds' rows="15"></textarea>
+                                        </div>
                                     </div>
                                 </div>
-
                                 <div class="form-group">
-                                    <label class="col-md-3 control-label">Tier 3</label>
-                                    <div class="col-md-9">     
-                                        <select class="form-control" onchange="tireselect()" name='tier3' id="tier3" required>
-                                            <option value="">-- Select --</option>
-                                           
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="col-md-3 col-xs-12 control-label">Comment</label>
-                                    <div class="col-md-9 col-xs-12" required>                                            
-                                        <textarea class="form-control" name='tl_cmds' rows="12"></textarea>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-md-4 col-xs-12 control-label" id='changelabel'>Exception</label>
+                                    <label class="col-md-4 col-xs-12 control-label changelabel">Exception</label>
                                     <div class="col-md-8 col-xs-12">
                                         <div class="col-md-6">                                    
-                                            <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="iradio" value="Yes"></div> Yes</label>
+                                            <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="nps_iradio" value="Yes"></div> Yes</label required>
                                         </div>
                                         <div class="col-md-6">                                    
-                                            <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="iradio" value="No"></div> No</label>
+                                            <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="nps_iradio" value="No"></div> No</label required>
                                         </div>
                                     </div>
                                 </div>
@@ -166,7 +221,7 @@ include("includes/header.php");
                                             <th>Queue</th>
                                             <th>Product Group</th>
                                             <th>Region</th>
-                                            <th>Alert Type</th>
+                                            <th style='font-weight: 900'>Alert Type</th>
                                             <th>Overall Exp</th>
                                         </tr>
                                     </thead>
@@ -175,7 +230,7 @@ include("includes/header.php");
                                             <td id="csat_que"><?php echo empty($returnArr['que_new'])?'-':$returnArr['que_new'] ?></td>
                                             <td id='csat_pro_group'><?php echo empty($returnArr['product_group'])?'-':$returnArr['product_group'] ?></td>
                                             <td id='csat_region'><?php echo empty($returnArr['region'])?'-':$returnArr['region'] ?></td>
-                                            <td id='csat_alert'><?php echo empty($returnArr['alert_type'])?'-':$returnArr['alert_type'] ?></td>
+                                            <td style='font-weight: 900' class='text-red' id='csat_alert'><?php echo empty($returnArr['alert_type'])?'-':$returnArr['alert_type'] ?></td>
                                             <td id='csat_ovr_exp'><?php echo empty($returnArr['overall_experience'])?'-':$returnArr['overall_experience'] ?></td>
                                         </tr>
                                     </tbody>
@@ -185,7 +240,7 @@ include("includes/header.php");
                                     <thead>
                                         <tr>
                                             <th>Closed Date</th>
-                                            <th>NPS</th>
+                                            <th style='font-weight: 900'>NPS</th>
                                             <th>Engineer Email</th>
                                             <th>Comments</th>
                                         </tr>
@@ -193,7 +248,7 @@ include("includes/header.php");
                                     <tbody>
                                         <tr>
                                             <td id='csat_clsd_date'><?php echo empty($returnArr['datetime_closed'])?'-':date('d-M-Y',strtotime($returnArr['datetime_closed'])) ?></td>
-                                            <td id='csat_nps'><?php echo empty($returnArr['nps'])?'-':$returnArr['nps'] ?></td>
+                                            <td style='font-weight: 900' id='csat_nps'><?php echo empty($returnArr['nps'])?'-':$returnArr['nps'] ?></td>
                                             <td id='csat_email'><?php echo empty($returnArr['engineer_email_id'])?'-':$returnArr['engineer_email_id'] ?></td>
                                             <td id='csat_cmd'><?php echo empty($returnArr['comments'])?'-':$returnArr['comments'] ?></td>
                                         </tr>
@@ -219,67 +274,131 @@ include("includes/header.php");
                                         </tr>
                                     </tbody>
                                 </table>
-                                
-                                <h5 class="panel-title"><strong>Lead's</strong> Review </h5>
+                                <div class="row control-oe">
+                                    <h5 class="panel-title"><strong>Lead's</strong> Review </h5>
+                                    <table class="table table-bordeGreen table-striped table-bordered">
+                                        <thead>
+                                            <tr class="active">
+                                                <th>Tier 1</th>
+                                                <th>Tier 2</th>
+                                                <th>Tier 3</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="success">
+                                                <td id="csat_lead_tier1"><?php echo empty($returnArr['tl_tier1'])?'-':$returnArr['tl_tier1'] ?></td>
+                                                <td id="csat_lead_tier2"><?php echo empty($returnArr['tl_tier2'])?'-':$returnArr['tl_tier2'] ?></td>
+                                                <td id="csat_lead_tier3"><?php echo empty($returnArr['tl_tier3'])?'-':$returnArr['tl_tier3'] ?></td>
+                                            </tr>
+                                        </tbody>
+                                        <thead>
+                                            <tr class="active">
+                                                <th colspan="2">Comments</th>
+                                                <th>Exception</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="success">
+                                                <td colspan="2" id="csat_lead_cmds"><?php echo empty($returnArr['tl_comments'])?'-':$returnArr['tl_comments'] ?></td>
+                                                <td id="csat_lead_exception"><?php echo empty($returnArr['tl_exception'])?'-':$returnArr['tl_exception'] ?></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                    
-                                <table class="table table-bordeGreen table-striped table-bordered">
-                                    <thead>
-                                        <tr class="active">
-                                            <th>Tier 1</th>
-                                            <th>Tier 2</th>
-                                            <th>Tier 3</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="success">
-                                            <td id="csat_lead_tier1"><?php echo empty($returnArr['tl_tier1'])?'-':$returnArr['tl_tier1'] ?></td>
-                                            <td id="csat_lead_tier2"><?php echo empty($returnArr['tl_tier2'])?'-':$returnArr['tl_tier2'] ?></td>
-                                            <td id="csat_lead_tier3"><?php echo empty($returnArr['tl_tier3'])?'-':$returnArr['tl_tier3'] ?></td>
-                                        </tr>
-                                    </tbody>
-                                    <thead>
-                                        <tr class="active">
-                                            <th colspan="2">Comments</th>
-                                            <th>Exception</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="success">
-                                            <td colspan="2" id="csat_lead_cmds"><?php echo empty($returnArr['tl_comments'])?'-':$returnArr['tl_comments'] ?></td>
-                                            <td id="csat_lead_exception"><?php echo empty($returnArr['tl_exception'])?'-':$returnArr['tl_exception'] ?></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                               
-                                <h5 class="panel-title"><strong>Manager's</strong> Review </h5>
-                                <table class="table table-bordeGreen table-striped table-bordered">
-                                    <thead>
-                                        <tr class="active">
-                                            <th>Tier 1</th>
-                                            <th>Tier 2</th>
-                                            <th>Tier 3</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="success">
-                                             <td id="csat_mgr_tier1"><?php echo empty($returnArr['mgr_tier1'])?'-':$returnArr['mgr_tier1'] ?></td>
-                                            <td id="csat_mgr_tier2"><?php echo empty($returnArr['mgr_tier2'])?'-':$returnArr['mgr_tier2'] ?></td>
-                                            <td id="csat_mgr_tier3"><?php echo empty($returnArr['mgr_tier3'])?'-':$returnArr['mgr_tier3'] ?></td>
-                                        </tr>
-                                    </tbody>
-                                    <thead>
-                                        <tr class="active">
-                                            <th colspan="2">Comments</th>
-                                            <th>Exception</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="success">
-                                            <td colspan="2" id="csat_mgr_cmds"><?php echo empty($returnArr['mgr_comments'])?'-':$returnArr['mgr_comments'] ?></td>
-                                            <td id="csat_mgr_exception"><?php echo empty($returnArr['mgr_exception'])?'-':$returnArr['mgr_exception'] ?></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                    <h5 class="panel-title"><strong>Manager's</strong> Review </h5>
+                                    <table class="table table-bordeGreen table-striped table-bordered">
+                                        <thead>
+                                            <tr class="active">
+                                                <th>Tier 1</th>
+                                                <th>Tier 2</th>
+                                                <th>Tier 3</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="success">
+                                                 <td id="csat_mgr_tier1"><?php echo empty($returnArr['mgr_tier1'])?'-':$returnArr['mgr_tier1'] ?></td>
+                                                <td id="csat_mgr_tier2"><?php echo empty($returnArr['mgr_tier2'])?'-':$returnArr['mgr_tier2'] ?></td>
+                                                <td id="csat_mgr_tier3"><?php echo empty($returnArr['mgr_tier3'])?'-':$returnArr['mgr_tier3'] ?></td>
+                                            </tr>
+                                        </tbody>
+                                        <thead>
+                                            <tr class="active">
+                                                <th colspan="2">Comments</th>
+                                                <th>Exception</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="success">
+                                                <td colspan="2" id="csat_mgr_cmds"><?php echo empty($returnArr['mgr_comments'])?'-':$returnArr['mgr_comments'] ?></td>
+                                                <td id="csat_mgr_exception"><?php echo empty($returnArr['mgr_exception'])?'-':$returnArr['mgr_exception'] ?></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <hr>
+                                <div class="row control-nps">
+                                    <h5 class="panel-title"><strong>Lead's</strong> Review </h5>
+                                       
+                                    <table class="table table-bordeGreen table-striped table-bordered">
+                                        <thead>
+                                            <tr class="active">
+                                                <th>Tier 1</th>
+                                                <th>Tier 2</th>
+                                                <th>Tier 3</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="success">
+                                                <td id="nps_tl_tier1"><?php echo empty($returnArr['nps_tl_tier1'])?'-':$returnArr['nps_tl_tier1'] ?></td>
+                                                <td id="nps_tl_tier2"><?php echo empty($returnArr['nps_tl_tier2'])?'-':$returnArr['nps_tl_tier2'] ?></td>
+                                                <td id="nps_tl_tier3"><?php echo empty($returnArr['nps_tl_tier3'])?'-':$returnArr['nps_tl_tier3'] ?></td>
+                                            </tr>
+                                        </tbody>
+                                        <thead>
+                                            <tr class="active">
+                                                <th colspan="2">Comments</th>
+                                                <th>Exception</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="success">
+                                                <td colspan="2" id="nps_tl_cmds"><?php echo empty($returnArr['nps_tl_comments'])?'-':$returnArr['nps_tl_comments'] ?></td>
+                                                <td id="nps_tl_exception"><?php echo empty($returnArr['nps_tl_exception'])?'-':$returnArr['nps_tl_exception'] ?></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                   
+                                    <h5 class="panel-title"><strong>Manager's</strong> Review </h5>
+                                    <table class="table table-bordeGreen table-striped table-bordered">
+                                        <thead>
+                                            <tr class="active">
+                                                <th>Tier 1</th>
+                                                <th>Tier 2</th>
+                                                <th>Tier 3</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="success">
+                                                 <td id="nps_mgr_tier1"><?php echo empty($returnArr['nps_mgr_tier1'])?'-':$returnArr['nps_mgr_tier1'] ?></td>
+                                                <td id="nps_mgr_tier2"><?php echo empty($returnArr['nps_mgr_tier2'])?'-':$returnArr['nps_mgr_tier2'] ?></td>
+                                                <td id="nps_mgr_tier3"><?php echo empty($returnArr['nps_mgr_tier3'])?'-':$returnArr['nps_mgr_tier3'] ?></td>
+                                            </tr>
+                                        </tbody>
+                                        <thead>
+                                            <tr class="active">
+                                                <th colspan="2">Comments</th>
+                                                <th>Exception</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="success">
+                                                <td colspan="2" id="nps_mgr_cmds"><?php echo empty($returnArr['nps_mgr_comments'])?'-':$returnArr['nps_mgr_comments'] ?></td>
+                                                <td id="nps_mgr_exception"><?php echo empty($returnArr['nps_mgr_exception'])?'-':$returnArr['nps_mgr_exception'] ?></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -304,6 +423,11 @@ include("includes/header.php");
         $('#tier1').attr('disabled', 'disabled');
         $('#tier2').attr('disabled', 'disabled');
         $('#tier3').attr('disabled', 'disabled');
-        $('#changelabel').text('Accept Exception');
+
+        $('#nps_tier1').attr('disabled', 'disabled');
+        $('#nps_tier2').attr('disabled', 'disabled');
+        $('#nps_tier3').attr('disabled', 'disabled');
+
+        $('.changelabel').text('Accept Exception');
     }
 </script>
