@@ -13,9 +13,10 @@ if (isset($_POST['frm_submit'])) {
 	$Qry.= $que_new == 'Overall' || $que_new == '' ? '' :" and que_new = '$que_new'";
 	$Qry.= $productgroup == 'Overall' || $productgroup == '' ? '' :" and product_group = '$productgroup'"; 		
 }
-$CsatArr = $commonobj->getQry("SELECT case_number,manager_name,team,que_new,wlan_ns,product_group,region,alert_type,overall_experience,case_origin,case_owner FROM aruba_csat where  alert_type !='Green' and  LENGTH (case_number) > 7 $Qry $filterQry1 order by case_number asc");
 
-$EscArr = $commonobj->getQry("SELECT `case`,manager_name,team,queue,wlan_ns,product_group,region,case_owner FROM aruba_esc where  LENGTH (`case`) > 7 $Qry $filterQry order by `case` asc");
+$CsatArr = $commonobj->getQry("SELECT calendar_week,calendar_month,case_number,manager_name,team,que_new,wlan_ns,product_group,region,alert_type,overall_experience,case_origin,case_owner,nps FROM aruba_csat where LENGTH (case_number) > 7 and (alert_type in ('Normal','Red') or nps in ('Passive','Red')) $Qry $filterQry1 order by case_number asc");
+
+$EscArr = $commonobj->getQry("SELECT calendar_week,calendar_month,`case`,manager_name,team,queue,wlan_ns,product_group,region,case_owner FROM aruba_esc where  LENGTH (`case`) > 7 $Qry $filterQry order by `case` asc");
 
 include "includes/header.php";
 	?>
@@ -25,8 +26,8 @@ include "includes/header.php";
 	<input type="hidden" name="frm_submit">           
                 <!-- START BREADCRUMB -->
                 <ul class="breadcrumb">
-                    <li><a href="dashboard.php">Home</a></li>
-                    <li><a href="dbr_form.php">Form</a></li>
+                    <li><a href="dsat_form.php">DSAT OE/NPS</a></li>
+                    <li><a href="esc.php">Escalation</a></li>
                 </ul>
                 <div class="page-title">                    
                     <div class="portlet">
@@ -109,12 +110,15 @@ include "includes/header.php";
 										<thead>
 											<tr>
 												<th>Case Number</th>
+												<th>Week</th>
+												<th>Month</th>
 												<th>Project</th>
 												<th>Queue</th>
 												<th>Region</th>
 												<th>Case Origin</th>
 												<th>Product Group</th>
 												<th>Alert Type</th>
+												<th>NPS</th>
 												<th>Overall Experience</th>
 												<th>Case Owner</th>
 												<th>Action</th>
@@ -126,12 +130,15 @@ include "includes/header.php";
 											?>
 												<tr>
 													<td><?=$value['case_number']?></td>
+													<td><?=$value['calendar_week']?></td>
+													<td><?=$value['calendar_month']?></td>
 													<td><?=$value['wlan_ns']?></td>
 													<td><?=$value['que_new']?></td>
 													<td><?=$value['region']?></td>
 													<td><?=$value['case_origin']?></td>
 													<td><?=$value['product_group']?></td>
 													<td><?=$value['alert_type']?></td>
+													<td><?=$value['nps']?></td>
 													<td><?=$value['overall_experience']?></td>
 													<td><?=$value['case_owner']?></td>
 													<td><a href="dsat_form.php?id=<?=base64_encode($value['case_number'])?>&type=csat"><i class="fa fa-pencil"></a></td>
@@ -199,7 +206,7 @@ include "includes/header.php";
 													<td><?=$value['product_group']?></td>
 													<td><?=$value['team']?></td>
 													<td><?=$value['case_owner']?></td>
-													<td><a href="dsat_form.php?id=<?=base64_encode($value['case'])?>&type=esc"><i class="fa fa-pencil"></a></td>
+													<td><a href="esc.php?id=<?=base64_encode($value['case'])?>&type=esc"><i class="fa fa-pencil"></a></td>
 												</tr>
 											<?php } ?>
 										</tbody>
@@ -245,7 +252,6 @@ include "includes/header.php";
 	<script type="text/javascript" src="js/plugins/tableexport/jspdf/libs/sprintf.js"></script>
 	<script type="text/javascript" src="js/plugins/tableexport/jspdf/jspdf.js"></script>
 	<script type="text/javascript" src="js/plugins/tableexport/jspdf/libs/base64.js"></script> 
-	
 	<script>
 	function show_model(case_number){
 		//alert(case_number);
