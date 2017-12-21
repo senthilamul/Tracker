@@ -1,7 +1,7 @@
 <?php
 set_time_limit(0);
 include "includes/config.php";
-//include 'includes/session_check.php';
+include 'includes/session_check.php';
 if (isset($_POST['frm_submit'])) {
 	extract($_POST);
 	 $managername = $manager;
@@ -96,12 +96,10 @@ include "includes/header.php";
                             <!-- START DATATABLE EXPORT -->
                             <div class="panel panel-default">
                                 <div class="panel-heading">
-                                    <h3 class="panel-title"><b>DSAT/Normal</b>Pending</h3>
+                                    <h3 class="panel-title"><b>DSAT/Normal</b> Pending</h3>
                                     <div class="btn-group pull-right">
-                                        <button class="btn btn-danger dropdown-toggle" data-toggle="dropdown"><i class="fa fa-bars"></i> Export Data</button>
-                                        <ul class="dropdown-menu">
-                                            <li><a href="#" onClick ="$('#customers2').tableExport({type:'excel',escape:'false'});"><img src='img/icons/xls.png' width="24"/> XLS</a></li>
-                                        </ul>
+                                        <!-- <span type='submit' class="btn btn-danger dropdown-toggle" data-target="#modal_basic" data-toggle="modal"><i class="fa fa-bars"></i> Export Data</span> -->
+                                        <span class="btn btn-danger" data-toggle="modal" data-target="#modal_basic"><i class="fa fa-bars"></i>Export Data</span>
                                     </div>                                    
                                     
                                 </div>
@@ -172,12 +170,12 @@ include "includes/header.php";
                             <div class="panel panel-default">
                                 <div class="panel-heading">
                                     <h3 class="panel-title"><b>Escalation</b>Pending</h3>
-                                    <div class="btn-group pull-right">
+                                    <!-- <div class="btn-group pull-right">
                                         <button class="btn btn-danger dropdown-toggle" data-toggle="dropdown"><i class="fa fa-bars"></i> Export Data</button>
                                         <ul class="dropdown-menu">
                                             <li><a href="#" onClick ="$('#customers2').tableExport({type:'excel',escape:'false'});"><img src='img/icons/xls.png' width="24"/> XLS</a></li>
                                         </ul>
-                                    </div>                                    
+                                    </div>   -->                                  
                                     
                                 </div>
                                 <div class="panel-body" style="overflow:scroll;">
@@ -185,6 +183,8 @@ include "includes/header.php";
 										<thead>
 											<tr>
 												<th>Case Number</th>
+												<th>Week</th>
+												<th>Month</th>
 												<th>Project</th>
 												<th>Queue</th>
 												<th>Region</th>
@@ -200,6 +200,8 @@ include "includes/header.php";
 											?>
 												<tr>
 													<td><?=$value['case']?></td>
+													<td><?=$value['calendar_week']?></td>
+													<td><?=$value['calendar_month']?></td>
 													<td><?=$value['wlan_ns']?></td>
 													<td><?=$value['queue']?></td>
 													<td><?=$value['region']?></td>
@@ -240,8 +242,41 @@ include "includes/header.php";
             </div>            
             <!-- END PAGE CONTENT -->
         </div>
-        <!-- END PAGE CONTAINER -->   
+        <!-- END PAGE CONTAINER -->  
+			<div class="modal" id="modal_basic" tabindex="-1" role="dialog" aria-labelledby="defModalHead" aria-hidden="true" style="display: none;">
+	            <div class="modal-dialog">
+	                <div class="modal-content">
+	                    <div class="modal-header">
+	                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+	                        <h4 class="modal-title" id="defModalHead">Basic Modal</h4>
+	                    </div>
+	                    <div class="modal-body">
+		                    	<div class="panel-body">
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-xs-12 control-label">Select</label>
+                                        <div class="col-md-8 col-xs-12">
+                                            <select class="form-control select" style="display: none;" data-live-search="true">
+                                            	<option value="">-- Selected --</option>
+                                               <?php $csatMonth = $commonobj->getQry("SELECT distinct calendar_month from aruba_csat order by id desc ");
+                                               		foreach ($csatMonth as $key => $value) {
+                                               			echo "<option value='$value[calendar_month]'>$value[calendar_month]</option>";
+                                               		}
+                                               ?>
+                                            </select>
+                                            <span class="help-block">Select Download Month</span>
+                                        </div>
+                                    </div>
+                                </div>
+	                    </div>
+	                    <div class="modal-footer">
+	                    	<button type="button" class="btn btn-primary"  data-dismiss="modal" id='submit'><i class="fa fa-pencil"></i>Submit</button>
+	                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
 	</form> 
+
 	<?php 
 	include("includes/footer.php");
 	?>
