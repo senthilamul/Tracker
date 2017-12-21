@@ -252,10 +252,21 @@ include "includes/header.php";
 	                    </div>
 	                    <div class="modal-body">
 		                    	<div class="panel-body">
+		                    		<div class="form-group">
+                                        <label class="col-md-3 col-xs-12 control-label">Select</label>
+                                        <div class="col-md-8 col-xs-12">
+                                            <select class="form-control select" style="display: none;" id='report'>
+                                            	<option value="">-- Selected --</option>
+                                            	<option value="aruba_csat">CSAT</option>
+                                            	<option value="aruba_esc">Escalation</option>
+                                            </select>
+                                            <span class="help-block">Select Raw Data</span>
+                                        </div>
+                                    </div>
                                     <div class="form-group">
                                         <label class="col-md-3 col-xs-12 control-label">Select</label>
                                         <div class="col-md-8 col-xs-12">
-                                            <select class="form-control select" style="display: none;" data-live-search="true">
+                                            <select class="form-control select" style="display: none;" data-live-search="true" id='selectmonth'>
                                             	<option value="">-- Selected --</option>
                                                <?php $csatMonth = $commonobj->getQry("SELECT distinct calendar_month from aruba_csat order by id desc ");
                                                		foreach ($csatMonth as $key => $value) {
@@ -269,7 +280,7 @@ include "includes/header.php";
                                 </div>
 	                    </div>
 	                    <div class="modal-footer">
-	                    	<button type="button" class="btn btn-primary"  data-dismiss="modal" id='submit'><i class="fa fa-pencil"></i>Submit</button>
+	                    	<button type="button" class="btn btn-primary" data-dismiss="modal" id='submitmonth'><i class="fa fa-pencil"></i>Submit</button>
 	                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 	                    </div>
 	                </div>
@@ -287,49 +298,4 @@ include "includes/header.php";
 	<script type="text/javascript" src="js/plugins/tableexport/jspdf/libs/sprintf.js"></script>
 	<script type="text/javascript" src="js/plugins/tableexport/jspdf/jspdf.js"></script>
 	<script type="text/javascript" src="js/plugins/tableexport/jspdf/libs/base64.js"></script> 
-	<script>
-	function show_model(case_number){
-		//alert(case_number);
-		$.ajax({
-			  url: 'ajax_tbr_tabel.php',
-			  type: 'POST',
-			  data: {'case_number':case_number},
-			  success: function(output) {
-				  //alert(output);
-				$(".modal-body").html("");
-				$(".modal-body").html(output);
-				$("#myModal").modal('show');
-			  }
-			}); 
-	}
-	// $("#manager").change(function(){
-	// 	$("#tlname").val("Overall");
-	// 	$("#enggname").val("Overall");
-	// });
-	function reload(){
-		document.getElementById("frmsrch").action = 'dsat_esc_pending.php'; 
-		document.getElementById("frmsrch").submit();
-		return false;
-	}
-	$(".selectweek").change(function(){
-	    var selectdate= $("#drop6").val();
-		if(selectdate == 'Daily'){
-			$("#drop7").css("display","none");
-		    $("#datepicker").css("display","inline-block");
-	    }else{
-			$("#drop7").css("display","inline-block");
-			$("#datepicker").css("display","none");
-			var calendertype= $("#drop5").val();
-			$.ajax({
-			  url: 'ajax_outage.php',
-			  type: 'POST',
-			  data: {'reporttype':selectdate,'calendertype':calendertype},
-			  success: function(output) {
-				var obj = jQuery.parseJSON( output);
-				$("#drop7").html("");
-				$("#drop7").html(obj);
-			  }
-			}); 
-		}
-	});
-	</script>
+	<script type="text/javascript" src="dropdown_ajax.js"></script> 
