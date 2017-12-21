@@ -8,6 +8,7 @@ function drpdown(){
     tlName_caseowner = tlname +'_' + caseowner;
     console.log(tlName_caseowner);
     $("#wait").css("display", "block");
+    $('.page-content-wrap').css('cursor', 'wait');
     $.ajax({
         url: 'ajax_outage.php',
         type: 'POST',
@@ -26,20 +27,20 @@ function drpdown(){
            $('#case_owner').val('');
         }
         $("#wait").css("display", "none");
+        $('.page-content-wrap').css('cursor', 'auto');
     }).fail(function() {
         console.log("error");
     });
 }
 
 function selectCase(value) {
-    console.log(value)
+    console.log(value);
   $.ajax({
         url: 'ajax_outage.php',
         type: 'POST',
         data: {caseid: value,comefrom:'csat_form'},
     })
     .done(function(output) {
-       
        output = JSON.parse(output);
        tableArr  = output[1];
        getoutput = output[0];
@@ -64,15 +65,39 @@ function selectCase(value) {
                 $('#csat_kept_info').html(getoutput[i]['cq9_kept_informed'])
                 $('#csat_solution_time').html(getoutput[i]['cq10_solution_time']);
 
-                $('#csat_lead_tier1').html(getoutput[i]['tl_tier1'] == null ? '-' : getoutput[i]['tl_tier1']);
-                $('#csat_lead_tier2').html(getoutput[i]['tl_tier2'] == null ? '-' : getoutput[i]['tl_tier2'] );
-                $('#csat_lead_tier3').html(getoutput[i]['tl_tier3'] == null ? '-' : getoutput[i]['tl_tier3'] );
+                $('#csat_lead_tier1').html(getoutput[i]['tl_tier1'] == '' ? '-' : getoutput[i]['tl_tier1']);
+                $('#csat_lead_tier2').html(getoutput[i]['tl_tier2'] == '' ? '-' : getoutput[i]['tl_tier2'] );
+                $('#csat_lead_tier3').html(getoutput[i]['tl_tier3'] == '' ? '-' : getoutput[i]['tl_tier3'] );
+                $('#csat_lead_cmds').html(getoutput[i]['tl_comments'] == '' ? '-' : getoutput[i]['tl_comments'] );
+                $('#csat_lead_exception').html(getoutput[i]['tl_exception'] == '' ? '-' : getoutput[i]['tl_exception'] );
 
-                $('#csat_lead_tier4').html(getoutput[i]['tl_tier4'] == null ? '-' : getoutput[i]['tl_tier4'] );
-                $('#csat_lead_tier5').html(getoutput[i]['tl_tier5'] == null ? '-' : getoutput[i]['tl_tier5'] );
-                $('#csat_lead_cmds').html(getoutput[i]['tl_comments'] == null ? '-' : getoutput[i]['tl_comments'] );
+                $('#csat_mgr_tier1').html(getoutput[i]['mgr_tier1'] == '' ? '-' : getoutput[i]['mgr_tier1']);
+                $('#csat_mgr_tier2').html(getoutput[i]['mgr_tier2'] == '' ? '-' : getoutput[i]['mgr_tier2'] );
+                $('#csat_mgr_tier3').html(getoutput[i]['mgr_tier3'] == '' ? '-' : getoutput[i]['mgr_tier3'] );
+                $('#csat_mgr_cmds').html(getoutput[i]['mgr_comments'] == '' ? '-' : getoutput[i]['mgr_comments'] );
+                $('#csat_mgr_exception').html(getoutput[i]['mgr_exception'] == '' ? '-' : getoutput[i]['mgr_exception'] );
 
+                $('#nps_tl_tier1').html(getoutput[i]['nps_tl_tier1'] == '' ? '-' : getoutput[i]['nps_tl_tier1']);
+                $('#nps_tl_tier2').html(getoutput[i]['nps_tl_tier2'] == '' ? '-' : getoutput[i]['nps_tl_tier2'] );
+                $('#nps_tl_tier3').html(getoutput[i]['nps_tl_tier3'] == '' ? '-' : getoutput[i]['nps_tl_tier3'] );
+                $('#nps_tl_cmds').html(getoutput[i]['nps_tl_comments'] == '' ? '-' : getoutput[i]['nps_tl_comments'] );
+                $('#nps_tl_exception').html(getoutput[i]['nps_tl_exception'] == '' ? '-' : getoutput[i]['nps_tl_exception'] );
 
+                $('#csat_mgr_tier1').html(getoutput[i]['nps_mgr_tier1'] == '' ? '-' : getoutput[i]['nps_mgr_tier1']);
+                $('#csat_mgr_tier2').html(getoutput[i]['nps_mgr_tier2'] == '' ? '-' : getoutput[i]['nps_mgr_tier2'] );
+                $('#csat_mgr_tier3').html(getoutput[i]['nps_mgr_tier3'] == '' ? '-' : getoutput[i]['nps_mgr_tier3'] );
+                $('#nps_mgr_cmds').html(getoutput[i]['nps_mgr_comments'] == '' ? '-' : getoutput[i]['nps_mgr_comments'] );
+                $('#nps_mgr_exception').html(getoutput[i]['nps_mgr_exception'] == '' ? '-' : getoutput[i]['nps_mgr_exception'] );
+                if(getoutput[i]['nps'] == 'Promoter' ){
+                    $('.control-nps').css('display', 'none');
+                }else{
+                    $('.control-nps').css('display', 'block');
+                }
+                if(getoutput[i]['alert_type'] == 'Green' ){
+                    $('.control-oe').css('display', 'none');
+                }else{
+                    $('.control-oe').css('display', 'block');
+                }
            };
         }else{
                
@@ -149,10 +174,16 @@ $(document).ajaxStart(function(){
     });
 
 
-function tireselect () {
-	var tier1 = $('#tier1').val() == '' ? '' : $('#tier1').val();
-	var tier2 = $('#tier2').val() == '' ? '' : $('#tier2').val();
-	var tier3 = $('#tier3').val() == '' ? '' : $('#tier3').val();
+function tireselect (getvalue) {
+    if(getvalue == 'oe'){
+    	var tier1 = $('#tier1').val() == '' ? '' : $('#tier1').val();
+    	var tier2 = $('#tier2').val() == '' ? '' : $('#tier2').val();
+    	var tier3 = $('#tier3').val() == '' ? '' : $('#tier3').val();
+    }else{
+        var tier1 = $('#nps_tier1').val() == '' ? '' : $('#nps_tier1').val();
+        var tier2 = $('#nps_tier2').val() == '' ? '' : $('#nps_tier2').val();
+        var tier3 = $('#nps_tier3').val() == '' ? '' : $('#nps_tier3').val();
+    }
 	var tier2drop,tier3drop;
 	$("#wait").css("display", "block");
 	var tierval = tier1+'_'+tier2+'_'+tier3;
@@ -164,47 +195,35 @@ function tireselect () {
 	})
 	.done(function(OutPut) {
 		var OP = JSON.parse(OutPut);
-		//console.log(OP);
 		var tier2Arr = OP[2];
 		var tier3Arr = OP[3];
-		var tier4Arr = OP[4];
-		var tier5Arr = OP[5];
+        
 		if(tier2Arr !=  null && tier2Arr !=''  ){
 			tier2drop = "<option value=''>-- Select --</option>";
 		    for(var i=0;i< tier2Arr.length; i++){
 		        tier2drop+="<option value='"+tier2Arr[i]+"'>"+tier2Arr[i]+"</option>";
 		    }
-		    $('#tier2').html(tier2drop)
-		    $('#tier2').val(tier2)
+            if(getvalue == 'oe' ){
+		      $('#tier2').html(tier2drop)
+		      $('#tier2').val(tier2)
+            }else{
+                $('#nps_tier2').html(tier2drop)
+                $('#nps_tier2').val(tier2)
+            }
 		}
 		if(tier3Arr !=  null && tier3Arr !=''  ){
 			tier3drop = "<option value=''>-- Select --</option>";
 		    for(var i=0;i< tier3Arr.length; i++){
 		        tier3drop+="<option value='"+tier3Arr[i]+"'>"+tier3Arr[i]+"</option>";
 		    }
-		    $('#tier3').html(tier3drop)
-		    $('#tier3').val(tier3)
-
+            if(getvalue == 'oe' ){
+		      $('#tier3').html(tier3drop)
+		      $('#tier3').val(tier3)
+            }else{
+                $('#nps_tier3').html(tier3drop)
+                $('#nps_tier3').val(tier3)
+            }
 		}
-		if(tier4Arr !=  null && tier4Arr !=''  ){
-			tier4drop = "<option value=''>-- Select --</option>";
-		    for(var i=0;i< tier4Arr.length; i++){
-		        tier4drop+="<option value='"+tier4Arr[i]+"'>"+tier4Arr[i]+"</option>";
-		    }
-		    $('#tier4').html(tier4drop)
-		    $('#tier4').val(tier4)
-
-		}
-		if(tier5Arr !=  null && tier5Arr !=''  ){
-			tier5drop = "<option value=''>-- Select --</option>";
-		    for(var i=0;i< tier5Arr.length; i++){
-		        tier5drop+="<option value='"+tier5Arr[i]+"'>"+tier5Arr[i]+"</option>";
-		    }
-		    $('#tier5').html(tier5drop)
-		    $('#tier5').val(tier5)
-
-		}
-		
 
 	})
 	.fail(function() {
@@ -427,3 +446,84 @@ function esc_tireselect () {
     });
     
 }
+function Nps_drpdown(){
+
+    var tlname = $('#nps_tlname').val()=='' || $('#nps_tlname').val()=='-- Select --'  ? '' : $('#nps_tlname').val() ;
+    var caseowner = $('#nps_case_owner').val()=='' || $('#nps_case_owner').val()== '-- Select --' ? '' : $('#nps_case_owner').val() ;
+    tlName_caseowner = tlname +'_' + caseowner;
+    console.log(tlName_caseowner);
+    $("#wait").css("display", "block");
+    $.ajax({
+        url: 'ajax_outage.php',
+        type: 'POST',
+        data: {selectList: tlName_caseowner,comefrom:'nps_csat'},
+    }).done(function(output) {
+        //console.log(output);
+        outputArr = JSON.parse(output);
+        $('#esc_case_number').html('');
+        $('#esc_case_number').html(outputArr[0]);
+        
+        if(outputArr[1] != null && outputArr[1] !=''){
+            $('#esc_case_owner').html('');
+            $('#esc_case_owner').html(outputArr[1]);
+            $('#esc_case_owner').val(caseowner);
+        }else{
+           $('#esc_case_owner').val('');
+        }
+        $("#wait").css("display", "none");
+    }).fail(function() {
+        console.log("error");
+    });
+}
+function show_model(case_number){
+        $.ajax({
+              url: 'ajax_tbr_tabel.php',
+              type: 'POST',
+              data: {'case_number':case_number},
+              success: function(output) {
+                  //alert(output);
+                $(".modal-body").html("");
+                $(".modal-body").html(output);
+                $("#myModal").modal('show');
+              }
+            }); 
+    }
+    function reload(){
+        document.getElementById("frmsrch").action = 'dsat_esc_pending.php'; 
+        document.getElementById("frmsrch").submit();
+        return false;
+    }
+    $(".selectweek").change(function(){
+        var selectdate= $("#drop6").val();
+        if(selectdate == 'Daily'){
+            $("#drop7").css("display","none");
+            $("#datepicker").css("display","inline-block");
+        }else{
+            $("#drop7").css("display","inline-block");
+            $("#datepicker").css("display","none");
+            var calendertype= $("#drop5").val();
+            $.ajax({
+              url: 'ajax_outage.php',
+              type: 'POST',
+              data: {'reporttype':selectdate,'calendertype':calendertype},
+              success: function(output) {
+                var obj = jQuery.parseJSON( output);
+                $("#drop7").html("");
+                $("#drop7").html(obj);
+              }
+            }); 
+        }
+    });
+$('#submitmonth').click(function() {
+    $('#selectmonth').val();
+    $('#report').val();
+    if($('#selectmonth').val() == '' || $('#selectmonth').val() == ''){
+            alert('Please Select Month and Report');
+            return false;
+    }else{
+        valu = $('#selectmonth').val();
+        data = $('#report').val();
+        window.location.href = "rawdata.php?month="+valu+'&data='+data;
+        //window.location.href = 'dsat_esc_pending.php';
+    }
+});
