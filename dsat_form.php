@@ -1,10 +1,9 @@
 <?php 
 include('includes/config.php');
-//include('includes/session_check.php');
+include('includes/session_check.php');
 $caseNumber = base64_decode($_GET['id']);
 $msg = $_GET['msg'];
 if(!empty($caseNumber)){
-    
     $returnArr = $commonobj->getQry("SELECT alert_type,que_new,product_group,region,comments,overall_experience,nps,datetime_closed,cq3_ease_of_access,cq7_technical_ability,cq8_non_technical_performance,cq9_kept_informed,cq10_solution_time,engineer_email_id,tl_tier1,tl_tier2,tl_tier3,tl_comments,manager_name,team,case_owner,case_number,tl_exception,mgr_tier1,mgr_tier2,mgr_tier3,mgr_comments,mgr_exception,nps_tl_tier1,nps_tl_tier2,nps_tl_tier3,nps_tl_comments,nps_tl_exception,nps_mgr_tier1,nps_mgr_tier2,nps_mgr_tier3,nps_mgr_comments,nps_mgr_exception from aruba_csat where case_number = '$caseNumber'");
 }
 $returnArr = $returnArr[0];
@@ -33,14 +32,9 @@ if(isset($_POST['tlname'])){
 include("includes/header.php");
 ?>          
 <style>
-    .form-control[disabled], .form-control[readonly] {
-        color: #0a0000;
-    }
-    td{
-        background: #b1d6d1 !important;
-    }
+    .form-control[disabled], .form-control[readonly] {color: #0a0000;}
+    td{background: #b1d6d1 !important;}
 </style>
-
 <div class="page-content-wrap">
     <div id="wait" style="display:none;width:49px;height:69px;position:absolute;top:30%;left:50%;padding:2px;z-index: 99999999;"><img src='img/demo_wait.gif' width="64" height="64" /></div>
     <div class="row">
