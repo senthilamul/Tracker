@@ -112,13 +112,13 @@ if(isset($_POST['selectList']) && $_POST['comefrom'] == 'csat' ){
 		$Qry.= empty($explodeArr[1])?"":" and case_owner = '$explodeArr[1]' ";
 	}
 	
-	$query = $commonobj->getQry("SELECT DISTINCT case_number FROM aruba_csat  $Qry and  alert_type !='Green' and LENGTH (case_number) > 7 $filterQry order by case_number asc");
+	$query = $commonobj->getQry("SELECT DISTINCT case_number FROM aruba_csat $Qry and  (alert_type in ('Normal','Red') or nps in ('Passive','Red')) and LENGTH (case_number) > 7 $filterQry1 order by case_number asc");
 	$casenumber[]='<option>-- Select --</option>';		
     foreach($query as $weeknamearr){
        $casenumber[]='<option value="'.$weeknamearr['case_number'].'">'.$weeknamearr['case_number'].'</option>'; 
     }
     if($explodeArr[0] != ''){
-	    $query1 = $commonobj->getQry("SELECT DISTINCT case_owner FROM aruba_csat where team = '$explodeArr[0]' and LENGTH (case_number) > 7 and alert_type !='Green' $filterQry order by case_owner asc");
+	    $query1 = $commonobj->getQry("SELECT DISTINCT case_owner FROM aruba_csat where team = '$explodeArr[0]' and LENGTH (case_number) > 7 and (alert_type in ('Normal','Red') or nps in ('Passive','Red')) $filterQry1 order by case_owner asc");
 	    $teamArr[] ='<option>-- Select --</option>';
 	    foreach($query1 as $teamnane){
 	       $teamArr[]='<option value="'.$teamnane['case_owner'].'">'.$teamnane['case_owner'].'</option>'; 
@@ -129,8 +129,9 @@ if(isset($_POST['selectList']) && $_POST['comefrom'] == 'csat' ){
 if(isset($_POST['caseid']) && $_POST['comefrom'] == 'csat_form' ){
 	$case_num = $_POST['caseid'];
 	//$case_num = '5325042654';
-	$query = $commonobj->getQry("SELECT alert_type,que_new,product_group,region,comments,overall_experience,nps,datetime_closed,cq3_ease_of_access,cq7_technical_ability,cq8_non_technical_performance,cq9_kept_informed,cq10_solution_time,engineer_email_id,tl_tier1,tl_tier2,tl_tier3,tl_comments,tl_exception,mgr_tier1,mgr_tier2,mgr_tier3,mgr_comments,mgr_exception FROM aruba_csat where case_number = '$case_num'  and LENGTH (case_number) > 7 and alert_type !='Green' $filterQry ");
+	$query = $commonobj->getQry("SELECT alert_type,que_new,product_group,region,comments,overall_experience,nps,datetime_closed,cq3_ease_of_access,cq7_technical_ability,cq8_non_technical_performance,cq9_kept_informed,cq10_solution_time,engineer_email_id,tl_tier1,tl_tier2,tl_tier3,tl_comments,tl_exception,mgr_tier1,mgr_tier2,mgr_tier3,mgr_comments,mgr_exception,nps_tl_tier1,nps_tl_tier2,nps_tl_tier3,nps_tl_comments,nps_tl_exception,nps_mgr_tier1,nps_mgr_tier2,nps_mgr_tier3,nps_mgr_comments,nps_mgr_exception FROM aruba_csat where case_number = '$case_num' $filterQry1 ");
     echo json_encode(array('0'=>$query));
+
 }
 
 if (isset($_POST['selectdropdown']) && $_POST['comefrom'] == 'csat_esc') {
