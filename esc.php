@@ -1,6 +1,6 @@
 <?php 
 include('includes/config.php');
-//include('includes/session_check.php');
+include('includes/session_check.php');
 $caseNumber = base64_decode($_GET['id']);
 $type = $_GET['type'];
 $msg = $_GET['msg'];
@@ -40,7 +40,6 @@ include("includes/header.php");
     <div class="row">
         <ul class="breadcrumb">
             <li><a href="dsat_form.php">OE</a></li>
-            <li><a href="csat_nps.php">NPS</a></li>
             <li><a href="#">Escalation</a></li>
         </ul>
         <div class="col-md-12">
@@ -147,7 +146,7 @@ include("includes/header.php");
                                 <div class="form-group">
                                     <label class="col-md-3 control-label">Tier 5</label>
                                     <div class="col-md-9">     
-                                        <select class="form-control" onchange="esc_tireselect()" name='esc_tier5' id="esc_tier5" required>
+                                        <select class="form-control" name='esc_tier5' id="esc_tier5" required>
                                             <option value="">-- Select --</option>
                                            
                                         </select>
