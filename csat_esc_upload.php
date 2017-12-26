@@ -1,7 +1,9 @@
 <?php 
+error_reporting(E_ALL);
 include('includes/config.php');
-//include('includes/session_check.php');
-if(isset($_POST['file'])){
+include('includes/session_check.php');
+require_once('csat_esc_support.php');
+if(isset($_POST['file']) && $_POST['file'] !=''){
     extract($_POST);
     if($_FILES['file_import']['name'] != ''){
         $tmpFilePath = $_FILES['file_import']['tmp_name'];
@@ -28,14 +30,16 @@ if(isset($_POST['file'])){
                             FROM aruba_csat WHERE ($TmpTableName.`case_number`= aruba_csat.case_number))";
                     }else if($file == 'Escalation'){
                         $sql1 = "INSERT INTO aruba_esc SELECT * FROM $TmpTableName WHERE NOT EXISTS(SELECT * 
-                            FROM aruba_esc WHERE ($TmpTableName.`case`= aruba_esc.`case`))";
+                            FROM aruba_esc WHERE $TmpTableName.`case`= aruba_esc.`case` and $TmpTableName.`date` = aruba_esc.`date`)";
                     }
                     $conn->exec($sql1);
+                    $udateQry = $conn->prepare("UPDATE aruba_csat set client_exception='Yes' where alert_type='Green' and nps='Promoter'");
+                    $udateQry->execute();
                 }catch(PDOException $e){  
                     echo $e->getMessage(); 
                 }
-                // $dropTable = $conn->exec("DROP TABLE $TmpTableName");
-                // unlink($filePath);
+                //$dropTable = $conn->exec("DROP TABLE $TmpTableName");
+                unlink($filePath);
             }else{
                 echo $_FILES['file_import']['name']." - not upload";
             }
@@ -126,7 +130,6 @@ include("includes/header.php");
                                     <div class="col-md-6 col-xs-12">                                             
                                         
                                             <input type="file" class="fileinput btn-primary" name="file_import" id="file_import">
-                                       
                                         <!-- <label id="file_import-error" class="error" for="file_import"></label> -->
                                     </div>
                                 </div>
@@ -158,6 +161,5 @@ $('.datepicker').datepicker({
     format: 'mm/dd/yyyy',
     //startDate: '-0d'
 });
-
 </script>
 
