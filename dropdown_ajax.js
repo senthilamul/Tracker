@@ -242,7 +242,7 @@ $('#sve-btn').click(function(event) {
     animation: 'news',
     closeAnimation: 'news',
     title: 'Alert!',
-    content: "Are You Sure Want to Complete Survey<br> Once You Confirm Can't Overwrite",
+    content: "Are You Sure Want to Complete Case?",
         buttons: {
             confirm: function () {
                 // if($('#case_number').val() != ''){
@@ -296,7 +296,7 @@ function esc_drpdown(){
         type: 'POST',
         data: {selectList: tlName_caseowner,comefrom:'escalation'},
     }).done(function(output) {
-        //console.log(output);
+        console.log(output);
         outputArr = JSON.parse(output);
         $('#esc_case_number').html('');
         $('#esc_case_number').html(outputArr[0]);
