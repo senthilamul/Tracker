@@ -1,6 +1,7 @@
 <?php 
 include('includes/config.php');
 include('includes/session_check.php');
+require_once('csat_esc_support.php');
 $caseNumber = base64_decode($_GET['id']);
 $type = $_GET['type'];
 $msg = $_GET['msg'];
@@ -24,7 +25,7 @@ if(isset($_POST['esc_tlname'])){
         $upsubtable = $conn->prepare($UpdateQry);
         $upsubtable->execute();
     }
-    header("Location:dsat_form.php?msg=1");
+    header("Location:esc.php?msg=1");
 }
 
 include("includes/header.php");
@@ -44,10 +45,11 @@ include("includes/header.php");
         </ul>
         <div class="col-md-12">
             <form class="form-horizontal" method="POST" id='add_form'>
+            <input type="hidden" name="_token" value="<?php echo $token; ?>">
                 <input type="hidden" id='form_name' name='form_name'>
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h3 class="panel-title"><strong>CSAT OE</strong></h3>
+                        <h3 class="panel-title"><strong>Escalation</strong></h3>
                         <ul class="panel-controls">
                             <li><a href="#" class="panel-remove"><span class="fa fa-times"></span></a></li>
                         </ul>
