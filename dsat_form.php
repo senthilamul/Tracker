@@ -1,6 +1,7 @@
 <?php 
 include('includes/config.php');
 include('includes/session_check.php');
+require_once('csat_esc_support.php');
 $caseNumber = base64_decode($_GET['id']);
 $msg = $_GET['msg'];
 if(!empty($caseNumber)){
@@ -8,25 +9,36 @@ if(!empty($caseNumber)){
 }
 $returnArr = $returnArr[0];
 $escreturnArr = $escalationArr[0];
-print_r($escreturnArr);
 if(isset($_POST['tlname'])){
     extract($_POST);
     if($userType1 == 'TL'){
-        $UpdateQry = "UPDATE aruba_csat set tl_tier1='$tier1',tl_tier2='$tier2',tl_tier3='$tier3',tl_comments='$tl_cmds',tl_exception='$oe_iradio',tl_status='1',tl_update_date='$dbdatetime',nps_tl_tier1='$nps_tier1',nps_tl_tier2='$nps_tier2',nps_tl_tier3='$nps_tier3',nps_tl_comments='$nps_tl_cmds',nps_tl_exception='$nps_iradio' where case_number = '$case_number'";
+		if($oe_iradio == "No"){
+			$UpdateQry1 = "UPDATE aruba_csat set mgr_exception='$oe_iradio',mgr_status='1',mgr_update_date='$dbdatetime',client_exception='$oe_iradio',client_status='1' where case_number = '$case_number'";
+			$upsubtable1 = $conn->prepare($UpdateQry1);
+			$insertQey1= $upsubtable1->execute();
+		}
+        $addslas_cmd = addslashes($nps_tl_cmds);
+        $UpdateQry = "UPDATE aruba_csat set tl_tier1='$tier1',tl_tier2='$tier2',tl_tier3='$tier3',tl_comments=".'"'.$tl_cmds.'"'.",tl_exception='$oe_iradio',tl_status='1',tl_update_date='$dbdatetime',nps_tl_tier1='$nps_tier1',nps_tl_tier2='$nps_tier2',nps_tl_tier3='$nps_tier3',nps_tl_comments='$addslas_cmd',nps_tl_exception='$nps_iradio' where case_number = '$case_number'";
         $upsubtable = $conn->prepare($UpdateQry);
-        $upsubtable->execute();
+        $insertQey= $upsubtable->execute();
     }else if($userType1 == 'Manager'){       
-        $UpdateQry = "UPDATE aruba_csat set mgr_tier1='$tier1',mgr_tier2='$tier2',mgr_tier3='$tier3',mgr_comments='$tl_cmds',mgr_exception='$oe_iradio',mgr_status='1',mgr_update_date='$dbdatetime',nps_mgr_tier1='$nps_tier1',nps_mgr_tier2='$nps_tier2',nps_mgr_tier3='$nps_tier3',nps_mgr_comments='$nps_tl_cmds',nps_mgr_exception='$nps_iradio' where case_number = '$case_number'";
+        $UpdateQry = "UPDATE aruba_csat set mgr_tier1='$tier1',mgr_tier2='$tier2',mgr_tier3='$tier3',mgr_comments=".'"'.$tl_cmds.'"'.",mgr_exception='$oe_iradio',mgr_status='1',mgr_update_date='$dbdatetime',nps_mgr_tier1='$nps_tier1',nps_mgr_tier2='$nps_tier2',nps_mgr_tier3='$nps_tier3',nps_mgr_comments='$addslas_cmd',nps_mgr_exception='$nps_iradio' where case_number = '$case_number'";
         $upsubtable = $conn->prepare($UpdateQry);
-        $upsubtable->execute();
+        $insertQey= $upsubtable->execute();
     }else{
         $exception = empty($oe_iradio)?$nps_iradio :$oe_iradio;
         $cmds = empty($nps_tl_cmds)?$tl_cmds :$nps_tl_cmds;
-        $UpdateQry = "UPDATE aruba_csat set client_exception='$exception',client_comments='$cmds',client_status='1' where case_number = '$case_number'";
+        $UpdateQry = "UPDATE aruba_csat set client_exception='$exception',client_comments='$addslas_cmd',client_status='1' where case_number = '$case_number'";
         $upsubtable = $conn->prepare($UpdateQry);
-        $upsubtable->execute();
+        $insertQey = $upsubtable->execute();
     }
-    header("Location:dsat_form.php?msg=1");
+    if($insertQey){
+        header("Location:dsat_form.php?msg=1");
+        exit;
+    }else{
+        header("Location:dsat_form.php?msg=2");
+        exit;
+    }
 }
 
 include("includes/header.php");
@@ -38,16 +50,30 @@ include("includes/header.php");
 <div class="page-content-wrap">
     <div id="wait" style="display:none;width:49px;height:69px;position:absolute;top:30%;left:50%;padding:2px;z-index: 99999999;"><img src='img/demo_wait.gif' width="64" height="64" /></div>
     <div class="row">
-    <ul class="breadcrumb">
-        <li><a href="#">OE</a></li>
-        <li><a href="esc.php">Escalation</a></li>
-    </ul>
+        <ul class="breadcrumb">
+            <li><a href="#">OE</a></li>
+            <li><a href="esc.php">Escalation</a></li>
+        </ul>
+        <?php if(!empty($msg)){
+            if($msg =='1' ){
+            ?>
+            <div class="alert alert-success alert-dismissable">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Alert !</strong> Case Survey Completed
+            </div>
+        <?php }else{ ?>
+            <div class="alert alert-error alert-dismissable">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Alert !</strong> Case Not Updated 
+            </div>
+        <?php } } ?>
         <div class="col-md-12">
             <form class="form-horizontal" method="POST" id='add_form'>
+            <input type="hidden" name="_token" value="<?php echo $token; ?>">
             <input type="hidden" id='form_name' name='form_name'>
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h3 class="panel-title"><strong>CSAT OE</strong></h3>
+                        <h3 class="panel-title"><strong>CSAT OE/NPS</strong></h3>
                         <ul class="panel-controls">
                             <li><a href="#" class="panel-remove"><span class="fa fa-times"></span></a></li>
                         </ul>
@@ -113,7 +139,7 @@ include("includes/header.php");
                                             <select class="form-control" onchange="tireselect('oe')" name='tier1' id="tier1" required>
                                                 <option value="" class="">-- Select --</option>
                                                 <option value="Controllable">Controllable</option>
-                                                <option value="Uncontrollable">Uncontrollable</option>
+                                                <option value="Un-Controllable">UnControllable</option>
                                             </select>
                                         </div>
                                     </div>
@@ -140,18 +166,19 @@ include("includes/header.php");
                                     <div class="form-group">
                                         <label class="col-md-3 col-xs-12 control-label">Comment</label>
                                         <div class="col-md-9 col-xs-12" required>                                            
-                                            <textarea class="form-control" name='tl_cmds' rows="15"></textarea>
+                                            <textarea class="form-control" name='tl_cmds' rows="15" required></textarea>
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <label class="col-md-4 col-xs-12 control-label changelabel">Exception</label>
                                         <div class="col-md-8 col-xs-12">
                                             <div class="col-md-6">                                    
-                                                <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="oe_iradio" value="Yes"></div> Yes</label required>
+                                                <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="oe_iradio" value="Yes" required></div> Yes</label>
                                             </div>
                                             <div class="col-md-6">                                    
-                                                <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="oe_iradio" value="No"></div> No</label required>
+                                                <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="oe_iradio" value="No" required></div> No</label>
                                             </div>
+                                            <label id="oe_iradio-error" class="error" for="oe_iradio"></label>
                                         </div>
                                     </div>
                                 </div>
@@ -164,7 +191,7 @@ include("includes/header.php");
                                             <select class="form-control" onchange="tireselect('nps')" name='nps_tier1' id="nps_tier1" required>
                                                 <option value="" class="">-- Select --</option>
                                                 <option value="Controllable">Controllable</option>
-                                                <option value="Uncontrollable">Uncontrollable</option>
+                                                <option value="Un-Controllable">Uncontrollable</option>
                                             </select>
                                         </div>
                                     </div>
@@ -191,21 +218,23 @@ include("includes/header.php");
                                     <div class="form-group">
                                         <label class="col-md-3 col-xs-12 control-label">Comment</label>
                                         <div class="col-md-9 col-xs-12" required>                                            
-                                            <textarea class="form-control" name='nps_tl_cmds' rows="15"></textarea>
+                                            <textarea class="form-control" name='nps_tl_cmds' rows="15" required></textarea>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="form-group">
+                                    <div class="form-group">
                                     <label class="col-md-4 col-xs-12 control-label changelabel">Exception</label>
                                     <div class="col-md-8 col-xs-12">
                                         <div class="col-md-6">                                    
-                                            <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="nps_iradio" value="Yes"></div> Yes</label required>
+                                            <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="nps_iradio" value="Yes" required></div> Yes</label>
                                         </div>
                                         <div class="col-md-6">                                    
-                                            <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="nps_iradio" value="No"></div> No</label required>
+                                            <label class="check"><div class="iradio_minimal-grey checked" style="position: relative;"><input type="radio" class="radio" name="nps_iradio" value="No" required></div> No</label>
                                         </div>
+                                        <label id="nps_iradio-error" class="error" for="nps_iradio"></label>
                                     </div>
                                 </div>
+                                </div>
+                                
                             </div>
                             <div class="col-md-8">
                                 <h5 class="panel-title"><strong>Case</strong> Details </h5>
@@ -411,8 +440,8 @@ include("includes/header.php");
 <script src="js/jquery-confirm.min.js" type="text/javascript"></script>
 <script src="dropdown_ajax.js" type="text/javascript"></script>
 <script>
-    var usertype = "<?php echo $userType?>";
-    console.log(usertype);
+   var usertype = "<?php echo $userType?>";
+    //console.log(usertype);
     if(usertype == 'client'){
         $('#tier1').attr('disabled', 'disabled');
         $('#tier2').attr('disabled', 'disabled');
@@ -424,4 +453,9 @@ include("includes/header.php");
 
         $('.changelabel').text('Accept Exception');
     }
+
+    var AlertType = "<?php echo $returnArr[alert_type] ?>";
+    AlertType == 'Green'?$('.control-oe').css('display','none'):'';
+    var NpsType = "<?php echo $returnArr[nps] ?>";
+    NpsType == 'Promoter'?$('.control-nps').css('display','none'):'';
 </script>
