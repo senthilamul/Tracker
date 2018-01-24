@@ -57,6 +57,7 @@ include("includes/header.php");
             <div class="row">
                 <div class="col-md-12">
                 <form class="form-horizontal" method="POST" id='add_form'>
+                <input type="hidden" name="_token" value="<?php echo $token; ?>">
                     <input type="hidden" id="weekname" name="weekname" value="<?php echo $resultArr[calendar_week]?>">
                     <input type="hidden" id="cal_month" name="cal_month" value="<?php echo $resultArr[calendar_month]?>">
                     <input type="hidden" id="cal_qtr" name="cal_qtr" value="<?php echo $resultArr[calendar_quarter]?>">
